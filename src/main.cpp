@@ -5,6 +5,9 @@
 #include <QQuickStyle>
 #include <KLocalizedContext>
 #include <KLocalizedString>
+#include <qt/QtQuick/QQuickItem>
+
+#include "canvas.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -17,7 +20,10 @@ int main(int argc, char *argv[]) {
         QQuickStyle::setStyle(QStringLiteral("org.kde.desktop"));
     }
 
+
     QQmlApplicationEngine engine;
+    qmlRegisterType<Canvas>("Renderer", 1, 0, "Canvas");
+
 
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
