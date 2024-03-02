@@ -4,16 +4,13 @@
 #include <qt/QtQuick/QQuickItem>
 #include <qt/QtQuick/qquickwindow.h>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_4_3_Core>
 
 
-class Renderer : public QObject, protected QOpenGLFunctions {
+class Renderer : public QObject, protected QOpenGLFunctions_4_3_Core {
     Q_OBJECT
 public:
-    Renderer()
-        : m_t(0)
-        , m_program(nullptr)
-    {}
+    static Renderer *getRenderer();
     ~Renderer();
 
     void setT(qreal t) {m_t = t;}
@@ -25,6 +22,12 @@ public slots:
     void paint();
     
 private:
+    Renderer()
+        : m_t(0)
+        , m_program(nullptr)
+    {}
+    static Renderer *singleton;
+
     QSize m_viewportSize;
     qreal m_t;
     QOpenGLShaderProgram *m_program;

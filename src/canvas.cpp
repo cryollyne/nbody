@@ -26,9 +26,9 @@ void Canvas::handleWindowChanged(QQuickWindow *win) {
 
 void Canvas::sync() {
     if (!m_renderer) {
-        m_renderer = new Renderer();
+        m_renderer = Renderer::getRenderer();
         connect(window(), &QQuickWindow::beforeRendering, m_renderer, &Renderer::init, Qt::DirectConnection);
-        connect(window(), &QQuickWindow::beforeRenderPassRecording, m_renderer, &Renderer::paint, Qt::DirectConnection);
+        connect(window(), &QQuickWindow::afterRenderPassRecording, m_renderer, &Renderer::paint, Qt::DirectConnection);
     }
 
     m_renderer->setViewportSize(window()->size() * window()->devicePixelRatio());
@@ -53,6 +53,14 @@ void Canvas::setT(qreal t) {
 void Canvas::releaseResources() {
     window()->scheduleRenderJob(new CleanupJob(m_renderer), QQuickWindow::BeforeSynchronizingStage);
     m_renderer = nullptr;
+}
+
+Renderer *Renderer::singleton = nullptr;
+Renderer *Renderer::getRenderer() {
+    if (Renderer::singleton)
+        return Renderer::singleton;
+
+    return Renderer::singleton = new Renderer();
 }
 
 Renderer::~Renderer() {
