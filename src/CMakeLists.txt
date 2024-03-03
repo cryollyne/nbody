@@ -3,10 +3,14 @@ add_executable(nbody)
 target_sources(nbody PRIVATE
     main.cpp
     canvas.cpp canvas.h
+    simulator.cpp
     resources.qrc
 )
 
+find_package(glm REQUIRED)
+
 target_link_libraries(nbody
+    glm::glm
     Qt${QT_MAJOR_VERSION}::Quick
     Qt${QT_MAJOR_VERSION}::Qml
     Qt${QT_MAJOR_VERSION}::Gui

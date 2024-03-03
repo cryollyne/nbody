@@ -92,6 +92,10 @@ void Renderer::init() {
         m_program->bindAttributeLocation("vertices", 0);
         m_program->link();
     }
+
+    if (!m_simulator) {
+        initSimulator();
+    }
 }
 
 void Renderer::paint() {

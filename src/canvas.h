@@ -6,6 +6,29 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions_4_3_Core>
 
+#include <glm/vec3.hpp>
+#include <iostream>
+
+#pragma pack()
+struct SimulatorData {
+    glm::vec3 position;
+    char _pad[4];
+    glm::vec3 velocity;
+    float mass;
+
+    SimulatorData()
+        : position(glm::vec3 {0, 0, 0})
+        , velocity(glm::vec3 {0, 0, 0})
+        , mass(1)
+    {}
+    SimulatorData(glm::vec3 pos, glm::vec3 vel, float _mass)
+        : position(pos)
+        , velocity(vel)
+        , mass(_mass)
+    {}
+};
+
+std::ostream &operator<<(std::ostream &o, SimulatorData &sim);
 
 class Renderer : public QObject, protected QOpenGLFunctions_4_3_Core {
     Q_OBJECT
@@ -28,9 +51,17 @@ private:
     {}
     static Renderer *singleton;
 
+    
+    // defined in simulator.cpp
+    void initSimulator();
+    void simulatorTick();
+
+
     QSize m_viewportSize;
     qreal m_t;
     QOpenGLShaderProgram *m_program;
+    QOpenGLShaderProgram *m_simulator;
+    uint m_simulatorBuffObj;
     QQuickWindow *m_window = nullptr;
 };
 
