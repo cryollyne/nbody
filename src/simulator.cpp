@@ -1,4 +1,5 @@
 #include "canvas.h"
+#include "backend.h"
 
 #include <iostream>
 std::ostream &operator<<(std::ostream &o, SimulatorData &sim) {
@@ -14,20 +15,7 @@ void Renderer::initSimulator() {
         std::cout << "init compute shaders\n";
         m_simulator = new QOpenGLShaderProgram();
         QOpenGLShader *shader = new QOpenGLShader(QOpenGLShader::Compute);
-        shader->compileSourceCode(
-                                                   "#version 430 core\n"
-                                                   "layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;\n"
-                                                   "struct Object {\n"
-                                                   "    vec3 position;\n"
-                                                   "    vec3 velocity;\n"
-                                                   "    float mass;\n"
-                                                   "};\n"
-                                                   "layout(binding = 0, std430) buffer SSBO {\n"
-                                                   "    Object obj[];\n"
-                                                   "} val;\n"
-                                                   "void main() {\n"
-                                                   "}\n"
-                                                   );
+        shader->compileSourceFile(Backend::DATADIR.absolutePath().append("/simulator/simulator.glsl"));
         m_simulator->addShader(shader);
         m_simulator->link();
 

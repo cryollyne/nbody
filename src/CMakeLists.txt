@@ -4,6 +4,7 @@ target_sources(nbody PRIVATE
     main.cpp
     canvas.cpp canvas.h
     simulator.cpp
+    backend.cpp backend.h
     resources.qrc
 )
 
@@ -20,3 +21,4 @@ target_link_libraries(nbody
 )
 
 install(TARGETS nbody ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+install(DIRECTORY shaders/ DESTINATION ${SHARE_INSTALL_PREFIX}/nbody)
