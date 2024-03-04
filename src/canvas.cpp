@@ -4,6 +4,8 @@
 #include <QOpenGLContext>
 #include <qt/QtCore/QRunnable>
 
+#include "backend.h"
+
 class CleanupJob : public QRunnable {
 public:
     CleanupJob(Renderer *renderer)
@@ -74,21 +76,8 @@ void Renderer::init() {
 
         initializeOpenGLFunctions();
         m_program = new QOpenGLShaderProgram();
-        m_program->addCacheableShaderFromSourceCode(QOpenGLShader::Vertex,
-                                                    "#version 330 core\n"
-                                                    "attribute highp vec4 vertices;"
-                                                    "out vec2 coords;"
-                                                    "void main() {"
-                                                    "    gl_Position = vertices;"
-                                                    "    coords = vertices.xy;"
-                                                    "}");
-        m_program->addCacheableShaderFromSourceCode(QOpenGLShader::Fragment,
-                                                    "#version 330 core\n"
-                                                    "uniform lowp float t;"
-                                                    "in vec2 coords;"
-                                                    "void main() {"
-                                                    "    gl_FragColor = vec4(coords.xy, 0, 1);"
-                                                    "}");
+        m_program->addCacheableShaderFromSourceFile(QOpenGLShader::Vertex, Backend::DATADIR.absolutePath().append("/renderer/vertex.glsl"));
+        m_program->addCacheableShaderFromSourceFile(QOpenGLShader::Fragment, Backend::DATADIR.absolutePath().append("/renderer/fragment.glsl"));
         m_program->bindAttributeLocation("vertices", 0);
         m_program->link();
     }
@@ -101,27 +90,16 @@ void Renderer::init() {
 void Renderer::paint() {
     m_window->beginExternalCommands();
     m_program->bind();
-    m_program->enableAttributeArray(0);
 
-    float val[] = {
-        -1, -1,
-        1, -1,
-        -1, 1,
-        1, 1
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
-    m_program->setAttributeArray(0, GL_FLOAT, val, 2);
-    m_program->setUniformValue("t", (float)m_t);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffObj);
     
     glViewport(0, 0, m_viewportSize.width(), m_viewportSize.height());
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glDrawArraysInstanced(GL_POINTS, 0, 2, 2);
 
-    m_program->disableAttributeArray(0);
     m_program->release();
     m_window->endExternalCommands();
 }
