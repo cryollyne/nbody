@@ -28,7 +28,8 @@ void Canvas::handleWindowChanged(QQuickWindow *win) {
 
 void Canvas::sync() {
     if (!m_renderer) {
-        m_renderer = Renderer::getRenderer();
+        Renderer::singleton = new Renderer();
+        m_renderer = Renderer::singleton;
         connect(window(), &QQuickWindow::beforeRendering, m_renderer, &Renderer::init, Qt::DirectConnection);
         connect(window(), &QQuickWindow::afterRenderPassRecording, m_renderer, &Renderer::paint, Qt::DirectConnection);
     }
@@ -58,11 +59,9 @@ void Canvas::releaseResources() {
 }
 
 Renderer *Renderer::singleton = nullptr;
+// may return nullptr
 Renderer *Renderer::getRenderer() {
-    if (Renderer::singleton)
-        return Renderer::singleton;
-
-    return Renderer::singleton = new Renderer();
+    return Renderer::singleton;
 }
 
 Renderer::~Renderer() {
