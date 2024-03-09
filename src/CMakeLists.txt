@@ -3,7 +3,6 @@ add_executable(nbody)
 target_sources(nbody PRIVATE
     main.cpp
     canvas.cpp canvas.h
-    simulator.cpp
     backend.cpp backend.h
     resources.qrc
 )

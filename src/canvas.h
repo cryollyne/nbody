@@ -4,7 +4,8 @@
 #include <qt/QtQuick/QQuickItem>
 #include <qt/QtQuick/qquickwindow.h>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLFunctions_4_3_Core>
+#include <QQuickFramebufferObject>
+#include <QTimer>
 
 #include <glm/vec3.hpp>
 #include <iostream>
@@ -30,79 +31,34 @@ struct SimulatorData {
 
 std::ostream &operator<<(std::ostream &o, SimulatorData &sim);
 
-class Renderer : public QObject, protected QOpenGLFunctions_4_3_Core {
-    Q_OBJECT
-public:
-    static Renderer *getRenderer();
-    ~Renderer();
 
-    void setT(qreal t) {m_t = t;}
-    void setViewportSize(const QSize &size) {m_viewportSize = size;}
-    void setWindow(QQuickWindow *win) { m_window = win;}
-
-public slots:
-    void init();
-    void paint();
-    
-private:
-    Renderer()
-        : m_t(0)
-        , m_program(nullptr)
-    {}
-    static Renderer *singleton;
-
-    
-    // defined in simulator.cpp
-    void initSimulator();
-    void simulatorTick();
-
-
-    QSize m_viewportSize;
-    qreal m_t;
-    QOpenGLShaderProgram *m_program;
-    QOpenGLShaderProgram *m_simulator;
-    uint m_simulatorBuffObj;
-    QQuickWindow *m_window = nullptr;
-};
-
-
-
-class Canvas : public QQuickItem {
-    Q_OBJECT
-    Q_PROPERTY(qreal t READ t WRITE setT NOTIFY tChanged)
-    QML_ELEMENT
-
-public:
-    Canvas()
-        : m_t(0)
+class SimRenderer : public QQuickFramebufferObject::Renderer {
+public: 
+    SimRenderer(const QQuickFramebufferObject *fbo)
+        : m_item(fbo)
         , m_renderer(nullptr)
-    {
-        connect(
-            this,
-            &QQuickItem::windowChanged,
-            this,
-            &Canvas::handleWindowChanged
-        );
-    }
+        , m_simulator(nullptr)
+    {}
 
-    qreal t() const { return m_t; }
-    void setT(qreal t);
-
-signals:
-    void tChanged();
-
-public slots:
-    void sync();
-    void cleanup();
-
-private slots:
-    void handleWindowChanged(QQuickWindow *win);
+    QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
+    void render() override;
 
 private:
-    void releaseResources() override;
-    qreal m_t;
-    Renderer *m_renderer;
+
+    const QQuickFramebufferObject *m_item;
+
+    QOpenGLShaderProgram *m_renderer;
+    QOpenGLShaderProgram *m_simulator;
+    uint32_t m_simulatorBuffObj;
 };
 
+class Canvas : public QQuickFramebufferObject {
+    QQuickFramebufferObject::Renderer *createRenderer() const override;
+
+    QTimer *m_timer = new QTimer;
+
+public slots:
+    void updateRenderer();
+};
 
 #endif // !CANVAS_H
