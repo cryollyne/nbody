@@ -1,9 +1,10 @@
 add_executable(nbody)
 
+set_property(TARGET nbody PROPERTY CXX_STANDARD 17)
+
 target_sources(nbody PRIVATE
     main.cpp
     canvas.cpp canvas.h
-    simulator.cpp
     backend.cpp backend.h
     resources.qrc
 )
