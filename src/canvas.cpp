@@ -14,6 +14,31 @@ std::ostream &operator<<(std::ostream &o, SimulatorData &sim) {
              << "mass: " << sim.mass;
 }
 
+class SimRenderer : public QQuickFramebufferObject::Renderer {
+public:
+    SimRenderer(const Canvas *fbo)
+        : m_item(fbo)
+        , m_renderer(nullptr)
+        , m_simulator(nullptr)
+    {}
+
+    QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
+    void render() override;
+    void synchronize(QQuickFramebufferObject *item) override;
+
+private:
+
+    void renderCanvas();
+    void updateSimulator();
+
+    const Canvas *m_item;
+    QQueue<RenderCommand::Command> *m_commandQueue = new QQueue<RenderCommand::Command>;
+
+    QOpenGLShaderProgram *m_renderer;
+    QOpenGLShaderProgram *m_simulator;
+    uint32_t m_simulatorBuffObj;
+};
+
 QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size) {
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);

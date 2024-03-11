@@ -43,33 +43,6 @@ struct SimulatorData {
 
 std::ostream &operator<<(std::ostream &o, SimulatorData &sim);
 
-class Canvas;
-
-class SimRenderer : public QQuickFramebufferObject::Renderer {
-public: 
-    SimRenderer(const QQuickFramebufferObject *fbo)
-        : m_item((const Canvas*)fbo)
-        , m_renderer(nullptr)
-        , m_simulator(nullptr)
-    {}
-
-    QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
-    void render() override;
-    void synchronize(QQuickFramebufferObject *item) override;
-
-private:
-
-    void renderCanvas();
-    void updateSimulator();
-
-    const Canvas *m_item;
-    QQueue<RenderCommand::Command> *m_commandQueue = new QQueue<RenderCommand::Command>;
-
-    QOpenGLShaderProgram *m_renderer;
-    QOpenGLShaderProgram *m_simulator;
-    uint32_t m_simulatorBuffObj;
-};
-
 class Canvas : public QQuickFramebufferObject {
     QQuickFramebufferObject::Renderer *createRenderer() const override;
 
