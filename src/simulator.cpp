@@ -32,12 +32,10 @@ void Renderer::initSimulator() {
         glBufferData(GL_SHADER_STORAGE_BUFFER, LEN*sizeof(SimulatorData), buffData, GL_DYNAMIC_READ);
         m_simulatorBuffObj = buffObj;
         delete[] buffData;
-
-        connect(&m_simulatorRunner, &QTimer::timeout, this, &Renderer::tickSimulator, Qt::DirectConnection);
     }
 }
 
-void Renderer::tickSimulator() {
+void Renderer::simulatorTick() {
     m_simulator->bind();
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffObj);
@@ -45,19 +43,4 @@ void Renderer::tickSimulator() {
     glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 
     m_simulator->release();
-}
-
-void Renderer::runSimulator() {
-    QMetaObject::invokeMethod(this, [this]{
-        if (!m_simulatorRunner.isActive()) {
-            m_simulatorRunner.start(100);
-        }
-    }, Qt::QueuedConnection);
-}
-void Renderer::stopSimulator() {
-    QMetaObject::invokeMethod(this, [this]{
-        if (m_simulatorRunner.isActive()) {
-            m_simulatorRunner.stop();
-        }
-    }, Qt::QueuedConnection);
 }

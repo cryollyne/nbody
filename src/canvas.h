@@ -5,7 +5,6 @@
 #include <qt/QtQuick/qquickwindow.h>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions_4_3_Core>
-#include <QTimer>
 
 #include <glm/vec3.hpp>
 #include <iostream>
@@ -51,7 +50,6 @@ public slots:
 private:
     Renderer()
         : m_t(0)
-        , m_simulatorRunner(new QTimer)
         , m_program(nullptr)
         , m_simulator(nullptr)
     {}
@@ -60,10 +58,7 @@ private:
     
     // defined in simulator.cpp
     void initSimulator();
-    void tickSimulator();
-    void runSimulator();
-    void stopSimulator();
-    QTimer m_simulatorRunner;
+    void simulatorTick();
 
 
     QSize m_viewportSize;
