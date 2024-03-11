@@ -51,6 +51,24 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
 }
 
 void SimRenderer::render() {
+    while (!m_commandQueue->isEmpty()) {
+        RenderCommand::Command c = m_commandQueue->dequeue();
+        switch (c.index()) {
+            case 0: renderCanvas(); break;
+            case 1: updateSimulator(); break;
+            default:
+                break;
+        }
+    }
+}
+
+void SimRenderer::synchronize(QQuickFramebufferObject *item) {
+    Canvas *canvas = static_cast<Canvas*>(item);
+    while (!canvas->m_commandQueue->isEmpty())
+        m_commandQueue->enqueue(canvas->m_commandQueue->dequeue());
+}
+
+void SimRenderer::renderCanvas() {
     QOpenGLExtraFunctions *gl = QOpenGLContext::currentContext()->extraFunctions();
 
     m_item->window()->beginExternalCommands();
@@ -67,21 +85,35 @@ void SimRenderer::render() {
     gl->glDrawArraysInstanced(GL_POINTS, 0, LEN, LEN);
 
     m_renderer->release();
+    m_item->window()->endExternalCommands();
+}
+
+void SimRenderer::updateSimulator() {
+    QOpenGLExtraFunctions *gl = QOpenGLContext::currentContext()->extraFunctions();
+
     m_simulator->bind();
 
     gl->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffObj);
     gl->glDispatchCompute(LEN, 1, 1);
 
     m_simulator->release();
-    m_item->window()->endExternalCommands();
 }
 
-void Canvas::updateRenderer() { update(); }
+void Canvas::updateRenderer() {
+    m_commandQueue->enqueue(RenderCommand::Render{});
+    update();
+}
+void Canvas::tickSimulator() {
+    m_commandQueue->enqueue(RenderCommand::Simulator{});
+    update();
+}
 
 QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
-    connect(m_timer, &QTimer::timeout, this, &Canvas::updateRenderer, Qt::DirectConnection);
-    QMetaObject::invokeMethod(m_timer, [this](){
-        this->m_timer->start(30);
+    connect(m_simulatorTimer, &QTimer::timeout, this, &Canvas::tickSimulator, Qt::DirectConnection);
+    connect(m_frameTimer, &QTimer::timeout, this, &Canvas::updateRenderer, Qt::DirectConnection);
+    QMetaObject::invokeMethod(m_simulatorTimer, [this](){
+        this->m_simulatorTimer->start(1000/60);
+        this->m_frameTimer->start(1000/30);
     });
     return new SimRenderer(this);
 }
