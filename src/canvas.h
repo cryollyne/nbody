@@ -9,8 +9,6 @@
 #include <glm/vec3.hpp>
 #include <iostream>
 
-class Canvas;
-
 #pragma pack()
 struct SimulatorData {
     glm::vec3 position;
@@ -35,7 +33,6 @@ std::ostream &operator<<(std::ostream &o, SimulatorData &sim);
 class Renderer : public QObject, protected QOpenGLFunctions_4_3_Core {
     Q_OBJECT
 public:
-    // may return nullptr
     static Renderer *getRenderer();
     ~Renderer();
 
@@ -51,7 +48,6 @@ private:
     Renderer()
         : m_t(0)
         , m_program(nullptr)
-        , m_simulator(nullptr)
     {}
     static Renderer *singleton;
 
@@ -67,8 +63,6 @@ private:
     QOpenGLShaderProgram *m_simulator;
     uint m_simulatorBuffObj;
     QQuickWindow *m_window = nullptr;
-
-    friend class Canvas;
 };
 
 
