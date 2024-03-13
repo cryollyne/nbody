@@ -6,6 +6,7 @@ target_sources(nbody PRIVATE
     main.cpp
     canvas.cpp canvas.h
     backend.cpp backend.h
+    dynamic_buffer.cpp dynamic_buffer.h
     resources.qrc
 )
 
