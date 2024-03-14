@@ -10,6 +10,10 @@ Kirigami.ApplicationWindow {
     globalDrawer: Kirigami.GlobalDrawer {
         isMenu: true
         actions: [
+            Kirigami.Action {
+                text: "settings"
+                onTriggered: settingsPage.open()
+            }
         ]
     }
 
@@ -39,6 +43,9 @@ Kirigami.ApplicationWindow {
             id: canvas
             anchors.fill: parent
         }
+    }
+    SettingsPage {
+        id: settingsPage
     }
     Kirigami.ScrollablePage {
         id: statusPage
