@@ -44,11 +44,25 @@ struct SimulatorData {
 std::ostream &operator<<(std::ostream &o, SimulatorData &sim);
 
 class Canvas : public QQuickFramebufferObject {
+    Q_OBJECT
     QQuickFramebufferObject::Renderer *createRenderer() const override;
 
     QTimer *m_simulatorTimer = new QTimer;
     QTimer *m_frameTimer = new QTimer;
     QQueue<RenderCommand::Command> *m_commandQueue = new QQueue<RenderCommand::Command>;
+
+
+
+    Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
+    bool m_isSimulationRunning = true;
+
+public:
+    bool isSimulationRunning() const;
+    void setIsSimulationRunning(bool r);
+
+signals:
+    void isSimulationRunningChanged();
+
 public slots:
     void tickSimulator();
     void updateRenderer();

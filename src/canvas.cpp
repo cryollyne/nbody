@@ -133,3 +133,22 @@ QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
     return new SimRenderer(this);
 }
 
+bool Canvas::isSimulationRunning() const { return m_isSimulationRunning; }
+void Canvas::setIsSimulationRunning(bool r) {
+    if (r != m_isSimulationRunning) {
+        m_isSimulationRunning = r;
+        emit isSimulationRunningChanged();
+    }
+
+    if (r) {
+        QMetaObject::invokeMethod(m_simulatorTimer, [this](){
+            this->m_simulatorTimer->start(1000/60);
+            this->m_frameTimer->start(1000/30);
+        });
+    } else {
+        QMetaObject::invokeMethod(m_simulatorTimer, [this](){
+            this->m_simulatorTimer->stop();
+            this->m_frameTimer->stop();
+        });
+    }
+}

@@ -18,9 +18,9 @@ Kirigami.ApplicationWindow {
         padding: 0
         contextualActions: [
             Kirigami.Action {
-                icon.name: "media-playback-start"
-                tooltip: "Pause/Play Simulation"
-                onTriggered: ;//TODO
+                icon.name: canvas.isSimulationRunning ? "media-playback-pause" : "media-playback-start"
+                tooltip: canvas.isSimulationRunning ? "Pause Simulation" : "Play Simulation"
+                onTriggered: canvas.isSimulationRunning = !canvas.isSimulationRunning
             },
             Kirigami.Action {
                 icon.name: "media-playback-start"
@@ -30,6 +30,7 @@ Kirigami.ApplicationWindow {
         ]
 
         Canvas {
+            id: canvas
             anchors.fill: parent
         }
     }
