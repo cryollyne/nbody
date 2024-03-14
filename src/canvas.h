@@ -44,11 +44,37 @@ struct SimulatorData {
 std::ostream &operator<<(std::ostream &o, SimulatorData &sim);
 
 class Canvas : public QQuickFramebufferObject {
+    Q_OBJECT
     QQuickFramebufferObject::Renderer *createRenderer() const override;
 
     QTimer *m_simulatorTimer = new QTimer;
     QTimer *m_frameTimer = new QTimer;
     QQueue<RenderCommand::Command> *m_commandQueue = new QQueue<RenderCommand::Command>;
+
+
+
+    Q_PROPERTY(float tickRate READ getTickRate WRITE setTickRate NOTIFY tickRateChanged)
+    Q_PROPERTY(float frameUpdateRate READ getFrameUpdateRate WRITE setFrameUpdateRate NOTIFY frameUpdateRateChanged)
+    Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
+
+    float m_simulatorTickRate = 60.0f;
+    float m_frameUpdateRate = 30.0f;
+    bool m_isSimulationRunning = true;
+
+public:
+    float getTickRate() const;
+    float getFrameUpdateRate() const;
+    bool isSimulationRunning() const;
+
+    void setTickRate(float rate);
+    void setFrameUpdateRate(float rate);
+    void setIsSimulationRunning(bool r);
+
+signals:
+    void tickRateChanged();
+    void frameUpdateRateChanged();
+    void isSimulationRunningChanged();
+
 public slots:
     void tickSimulator();
     void updateRenderer();

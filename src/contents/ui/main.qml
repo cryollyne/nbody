@@ -5,11 +5,49 @@ import org.kde.kirigami 2.20 as Kirigami
 import Renderer 1.0
 
 Kirigami.ApplicationWindow {
-    
     id: root
 
-    title: "n body sim"
-    pageStack.initialPage: Canvas {
+    globalDrawer: Kirigami.GlobalDrawer {
+        isMenu: true
+        actions: [
+            Kirigami.Action {
+                text: "settings"
+                onTriggered: settingsPage.open()
+            }
+        ]
+    }
 
+    title: "n body sim"
+    pageStack.initialPage: Kirigami.Page {
+        padding: 0
+        contextualActions: [
+            Kirigami.Action {
+                icon.name: canvas.isSimulationRunning ? "media-playback-pause" : "media-playback-start"
+                tooltip: canvas.isSimulationRunning ? "Pause Simulation" : "Play Simulation"
+                onTriggered: canvas.isSimulationRunning = !canvas.isSimulationRunning
+            },
+            Kirigami.Action {
+                // TODO: gray out action when simulation is running
+                icon.name: "media-playback-start"
+                tooltip: "Tick Simulation"
+                onTriggered: {
+                    if (!canvas.isSimulationRunning) {
+                        canvas.tickSimulator();
+                        canvas.updateRenderer();
+                    }
+                }
+            }
+        ]
+
+        Canvas {
+            id: canvas
+            anchors.fill: parent
+        }
+    }
+    SettingsPage {
+        id: settingsPage
+    }
+    Kirigami.ScrollablePage {
+        id: statusPage
     }
 }
