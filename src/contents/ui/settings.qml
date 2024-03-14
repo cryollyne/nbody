@@ -7,14 +7,14 @@ Kirigami.ScrollablePage {
     id: settingsPage
 
     function open() {
-        tickRateField.value = canvas.tickRate;
-        frameUpdateRateField.value = canvas.frameUpdateRate;
+        tickRateField.text = canvas.tickRate;
+        frameUpdateRateField.text = canvas.frameUpdateRate;
         pageStack.push(settingsPage);
     }
 
     function applyChanges() {
-        canvas.tickRate = tickRateField.value;
-        canvas.frameUpdateRate = frameUpdateRateField.value;
+        canvas.tickRate = tickRateField.text;
+        canvas.frameUpdateRate = frameUpdateRateField.text;
     }
 
     ColumnLayout {
@@ -22,13 +22,15 @@ Kirigami.ScrollablePage {
 
         Kirigami.FormLayout {
             Layout.alignment: Qt.AlignTop
-            Controls.SpinBox {
+            Controls.TextField {
                 id: tickRateField
                 Kirigami.FormData.label: "Simulation update rate"
+                validator: DoubleValidator{bottom: 1}
             }
-            Controls.SpinBox {
+            Controls.TextField {
                 id: frameUpdateRateField
                 Kirigami.FormData.label: "Frame update rate"
+                validator: DoubleValidator{bottom: 1}
             }
         }
 
