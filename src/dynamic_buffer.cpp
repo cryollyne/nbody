@@ -24,6 +24,9 @@ void DynamicBufferArray::addObject(const SimulatorData *obj) {
     gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, m_length*sizeof(SimulatorData), sizeof(SimulatorData), obj);
     m_length++;
 }
+void DynamicBufferArray::addObject(SimulatorData obj) {
+    addObject(&obj);
+}
 
 void DynamicBufferArray::removeObject(uint32_t index) {
     if (index + 1 == m_length) {
@@ -55,13 +58,16 @@ void DynamicBufferArray::editObject(uint32_t index, const SimulatorData *obj) {
     gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_buffObject);
     gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, index*sizeof(SimulatorData), sizeof(SimulatorData), obj);
 }
+void DynamicBufferArray::editObject(uint32_t index, SimulatorData obj) {
+    editObject(index, &obj);
+}
 
 
-uint32_t DynamicBufferArray::buffObject() {
+uint32_t DynamicBufferArray::buffObject() const {
     return m_buffObject;
 }
 
-uint32_t DynamicBufferArray::size() {
+uint32_t DynamicBufferArray::size() const {
     return m_length;
 }
 

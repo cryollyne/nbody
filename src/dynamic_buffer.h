@@ -8,11 +8,13 @@ class SimulatorData;
 class DynamicBufferArray {
 public:
     void addObject(const SimulatorData *obj);
+    void addObject(SimulatorData obj);
     void removeObject(uint32_t index);
     void editObject(uint32_t index, const SimulatorData *obj);
+    void editObject(uint32_t index, SimulatorData obj);
 
-    uint32_t buffObject();
-    uint32_t size();
+    uint32_t buffObject() const;
+    uint32_t size() const;
 
     DynamicBufferArray();
 

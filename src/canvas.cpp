@@ -7,8 +7,6 @@
 #include "backend.h"
 #include "dynamic_buffer.h"
 
-#define LEN 2
-
 std::ostream &operator<<(std::ostream &o, SimulatorData &sim) {
     return o << "pos: { " << sim.position.x << ", " << sim.position.y << ", " << sim.position.z << " }, "
              << "vel: { " << sim.velocity.x << ", " << sim.velocity.y << ", " << sim.velocity.z << " }, "
@@ -44,8 +42,6 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-    QOpenGLExtraFunctions *gl = QOpenGLContext::currentContext()->extraFunctions();
-
     if (!m_renderer) {
         m_renderer = new QOpenGLShaderProgram();
         m_renderer->addCacheableShaderFromSourceFile(QOpenGLShader::Vertex, Backend::DATADIR.absolutePath().append("/renderer/vertex.glsl"));
@@ -62,15 +58,8 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
         m_simulator->link();
         delete shader;
 
-        SimulatorData *buffData = new SimulatorData[LEN] {
-            {glm::vec3 {-1, 0, 0}, glm::vec3 {0, -0.3, 0}, 1e10},
-            {glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10},
-        };
-
-        m_simulatorBuffer.addObject(buffData);
-        m_simulatorBuffer.addObject(buffData + 1);
-
-        delete[] buffData;
+        m_simulatorBuffer.addObject({glm::vec3 {-1, 0, 0}, glm::vec3 {0, -0.3, 0}, 1e10});
+        m_simulatorBuffer.addObject({glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10});
     }
 
     return new QOpenGLFramebufferObject(size, format);
