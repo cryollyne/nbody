@@ -133,6 +133,38 @@ QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
     return new SimRenderer(this);
 }
 
+
+
+float Canvas::getTickRate() const { return m_simulatorTickRate; }
+void Canvas::setTickRate(float rate) {
+    if (rate == m_simulatorTickRate)
+        return;
+    m_simulatorTickRate = rate;
+    emit tickRateChanged();
+
+    if (m_simulatorTimer->isActive()) {
+        QMetaObject::invokeMethod(m_simulatorTimer, [&,this](){
+            this->m_simulatorTimer->stop();
+            this->m_simulatorTimer->start(1000.0/rate);
+        });
+    }
+}
+
+float Canvas::getFrameUpdateRate() const { return m_frameUpdateRate; }
+void Canvas::setFrameUpdateRate(float rate) {
+    if (rate == m_frameUpdateRate)
+        return;
+    m_frameUpdateRate = rate;
+    emit tickRateChanged();
+
+    if (m_frameTimer->isActive()) {
+        QMetaObject::invokeMethod(m_frameTimer, [&,this](){
+            this->m_frameTimer->stop();
+            this->m_frameTimer->start(1000.0/rate);
+        });
+    }
+}
+
 bool Canvas::isSimulationRunning() const { return m_isSimulationRunning; }
 void Canvas::setIsSimulationRunning(bool r) {
     if (r != m_isSimulationRunning) {
@@ -142,8 +174,8 @@ void Canvas::setIsSimulationRunning(bool r) {
 
     if (r) {
         QMetaObject::invokeMethod(m_simulatorTimer, [this](){
-            this->m_simulatorTimer->start(1000/60);
-            this->m_frameTimer->start(1000/30);
+            this->m_simulatorTimer->start(1000.0/m_simulatorTickRate);
+            this->m_frameTimer->start(1000.0/m_frameUpdateRate);
         });
     } else {
         QMetaObject::invokeMethod(m_simulatorTimer, [this](){
