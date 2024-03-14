@@ -5,8 +5,7 @@
 #include <QOpenGLFramebufferObjectFormat>
 #include "canvas.h"
 #include "backend.h"
-
-#define LEN 2
+#include "dynamic_buffer.h"
 
 std::ostream &operator<<(std::ostream &o, SimulatorData &sim) {
     return o << "pos: { " << sim.position.x << ", " << sim.position.y << ", " << sim.position.z << " }, "
@@ -36,14 +35,12 @@ private:
 
     QOpenGLShaderProgram *m_renderer;
     QOpenGLShaderProgram *m_simulator;
-    uint32_t m_simulatorBuffObj;
+    DynamicBufferArray m_simulatorBuffer;
 };
 
 QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size) {
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-
-    QOpenGLExtraFunctions *gl = QOpenGLContext::currentContext()->extraFunctions();
 
     if (!m_renderer) {
         m_renderer = new QOpenGLShaderProgram();
@@ -61,15 +58,8 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
         m_simulator->link();
         delete shader;
 
-        SimulatorData *buffData = new SimulatorData[LEN] {
-            {glm::vec3 {-1, 0, 0}, glm::vec3 {0, -0.3, 0}, 1e10},
-            {glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10},
-        };
-
-        gl->glGenBuffers(1, &m_simulatorBuffObj);
-        gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_simulatorBuffObj);
-        gl->glBufferData(GL_SHADER_STORAGE_BUFFER, LEN*sizeof(SimulatorData), buffData, GL_DYNAMIC_READ);
-        delete[] buffData;
+        m_simulatorBuffer.addObject({glm::vec3 {-1, 0, 0}, glm::vec3 {0, -0.3, 0}, 1e10});
+        m_simulatorBuffer.addObject({glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10});
     }
 
     return new QOpenGLFramebufferObject(size, format);
@@ -100,14 +90,14 @@ void SimRenderer::renderCanvas() {
     m_renderer->bind();
     gl->glClearColor(0, 0, 0, 1);
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    gl->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffObj);
+    gl->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffer.buffObject());
 
     gl->glDisable(GL_DEPTH_TEST);
     gl->glEnable(GL_BLEND);
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     gl->glEnable(GL_PROGRAM_POINT_SIZE);
 
-    gl->glDrawArraysInstanced(GL_POINTS, 0, LEN, LEN);
+    gl->glDrawArraysInstanced(GL_POINTS, 0, m_simulatorBuffer.size(), m_simulatorBuffer.size());
 
     m_renderer->release();
     m_item->window()->endExternalCommands();
@@ -118,8 +108,8 @@ void SimRenderer::updateSimulator() {
 
     m_simulator->bind();
 
-    gl->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffObj);
-    gl->glDispatchCompute(LEN, 1, 1);
+    gl->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffer.buffObject());
+    gl->glDispatchCompute(m_simulatorBuffer.size(), 1, 1);
 
     m_simulator->release();
 }
