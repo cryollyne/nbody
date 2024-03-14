@@ -23,9 +23,15 @@ Kirigami.ApplicationWindow {
                 onTriggered: canvas.isSimulationRunning = !canvas.isSimulationRunning
             },
             Kirigami.Action {
+                // TODO: gray out action when simulation is running
                 icon.name: "media-playback-start"
                 tooltip: "Tick Simulation"
-                onTriggered: ;//TODO
+                onTriggered: {
+                    if (!canvas.isSimulationRunning) {
+                        canvas.tickSimulator();
+                        canvas.updateRenderer();
+                    }
+                }
             }
         ]
 
