@@ -19,6 +19,7 @@ public:
     QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
     void render() override;
     void synchronize(QQuickFramebufferObject *item) override;
+    void synchronizeObjects(Canvas *item);
 
 private:
 
@@ -66,16 +67,46 @@ void SimRenderer::render() {
         switch (c.index()) {
             case 0: renderCanvas(); break;
             case 1: updateSimulator(); break;
-            default:
-                break;
+            case 2: break; // this should never happen due to checks in SimRenderer::synchronize()
         }
     }
 }
 
 void SimRenderer::synchronize(QQuickFramebufferObject *item) {
     Canvas *canvas = static_cast<Canvas*>(item);
-    while (!canvas->m_commandQueue->isEmpty())
-        m_commandQueue->enqueue(canvas->m_commandQueue->dequeue());
+    bool syncObj = false;
+    while (!canvas->m_commandQueue->isEmpty()) {
+        RenderCommand::Command command = canvas->m_commandQueue->dequeue();
+        if (command.index() != 2)
+            m_commandQueue->enqueue(command);
+        else
+            syncObj = true;
+    }
+
+    if (syncObj)
+        synchronizeObjects(canvas);
+}
+
+void SimRenderer::synchronizeObjects(Canvas *canvas) {
+    QOpenGLExtraFunctions *gl = QOpenGLContext::currentContext()->extraFunctions();
+
+    uint32_t length = m_simulatorBuffer.size();
+
+    gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_simulatorBuffer.buffObject());
+    SimulatorData *data = (SimulatorData*)gl->glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, length*sizeof(SimulatorData), GL_MAP_READ_BIT);
+
+    canvas->m_objects.clear();
+    for (uint32_t i = 0; i < length; i++) {
+        SimulatorData &current = data[i];
+        QVariant obj;
+        obj.setValue(SimulatorObject {
+            current.position,
+            current.velocity,
+            current.mass
+        });
+        canvas->m_objects.append(obj);
+    }
+    gl->glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
 
 void SimRenderer::renderCanvas() {
@@ -115,6 +146,10 @@ void Canvas::updateRenderer() {
 }
 void Canvas::tickSimulator() {
     m_commandQueue->enqueue(RenderCommand::Simulator{});
+    update();
+}
+void Canvas::synchronizeObjects() {
+    m_commandQueue->enqueue(RenderCommand::SynchronizeObjects{});
     update();
 }
 

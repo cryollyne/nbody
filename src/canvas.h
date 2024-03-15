@@ -10,13 +10,17 @@
 
 #include <variant>
 
+#include "simulation_object_ui_data_type.h"
+
 namespace RenderCommand {
     class Render{};
     class Simulator{};
+    class SynchronizeObjects{};
 
     using Command = std::variant<
           Render
         , Simulator
+        , SynchronizeObjects
     >;
 }
 
@@ -34,6 +38,7 @@ class Canvas : public QQuickFramebufferObject {
     Q_PROPERTY(float frameUpdateRate READ getFrameUpdateRate WRITE setFrameUpdateRate NOTIFY frameUpdateRateChanged)
     Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
 
+    QVariantList m_objects {};
     float m_simulatorTickRate = 60.0f;
     float m_frameUpdateRate = 30.0f;
     bool m_isSimulationRunning = true;
@@ -55,6 +60,7 @@ signals:
 public slots:
     void tickSimulator();
     void updateRenderer();
+    void synchronizeObjects();
 
     friend class SimRenderer;
 };
