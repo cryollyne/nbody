@@ -3,7 +3,8 @@
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLContext>
 
-#include "canvas.h"
+#include "simulation_data.h"
+
 DynamicBufferArray::DynamicBufferArray()
     : m_length(0)
     , m_capacity(32)
