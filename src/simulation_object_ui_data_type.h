@@ -1,27 +1,18 @@
 #ifndef SIMULATION_OBJECT_UI_DATA_TYPE_H
 #define SIMULATION_OBJECT_UI_DATA_TYPE_H
 
-class SimulatorObject : public QObject {
-    Q_OBJECT
+struct SimulatorObject {
+    Q_GADGET
+
+    Q_PROPERTY(QVector3D position MEMBER m_position)
+    Q_PROPERTY(QVector3D velocity MEMBER m_velocity)
+    Q_PROPERTY(float mass MEMBER m_mass)
+
+public:
     QVector3D m_position;
     QVector3D m_velocity;
     float m_mass;
 
-    Q_PROPERTY(QVector3D pos READ getPosition NOTIFY positionChanged)
-    Q_PROPERTY(QVector3D vel READ getVelocity NOTIFY velocityChanged)
-    Q_PROPERTY(float mass READ getMass NOTIFY massChanged)
-
-public:
-    QVector3D getPosition() const { return m_position; }
-    QVector3D getVelocity() const { return m_velocity; }
-    float getMass() const { return m_mass; }
-
-signals:
-    void positionChanged();
-    void velocityChanged();
-    void massChanged();
-
-public:
     SimulatorObject &operator=(const SimulatorObject &obj) {
         m_position = obj.m_position;
         m_velocity = obj.m_velocity;
@@ -39,8 +30,7 @@ public:
         , m_mass()
     {}
     SimulatorObject(const SimulatorObject &obj)
-        : QObject(nullptr)
-        , m_position(obj.m_position)
+        : m_position(obj.m_position)
         , m_velocity(obj.m_velocity)
         , m_mass(obj.m_mass)
     {}

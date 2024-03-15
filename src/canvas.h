@@ -34,6 +34,7 @@ class Canvas : public QQuickFramebufferObject {
 
 
 
+    Q_PROPERTY(QVariantList objects READ getObjects NOTIFY objectsChanged)
     Q_PROPERTY(float tickRate READ getTickRate WRITE setTickRate NOTIFY tickRateChanged)
     Q_PROPERTY(float frameUpdateRate READ getFrameUpdateRate WRITE setFrameUpdateRate NOTIFY frameUpdateRateChanged)
     Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
@@ -44,6 +45,7 @@ class Canvas : public QQuickFramebufferObject {
     bool m_isSimulationRunning = true;
 
 public:
+    QVariantList getObjects() const;
     float getTickRate() const;
     float getFrameUpdateRate() const;
     bool isSimulationRunning() const;
@@ -53,6 +55,7 @@ public:
     void setIsSimulationRunning(bool r);
 
 signals:
+    void objectsChanged();
     void tickRateChanged();
     void frameUpdateRateChanged();
     void isSimulationRunningChanged();

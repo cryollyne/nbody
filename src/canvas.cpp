@@ -151,6 +151,7 @@ void Canvas::tickSimulator() {
 void Canvas::synchronizeObjects() {
     m_commandQueue->enqueue(RenderCommand::SynchronizeObjects{});
     update();
+    emit objectsChanged();
 }
 
 QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
@@ -164,6 +165,8 @@ QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
 }
 
 
+
+QVariantList Canvas::getObjects() const { return m_objects; }
 
 float Canvas::getTickRate() const { return m_simulatorTickRate; }
 void Canvas::setTickRate(float rate) {
