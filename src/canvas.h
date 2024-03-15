@@ -8,8 +8,6 @@
 #include <QTimer>
 #include <QQueue>
 
-#include <glm/vec3.hpp>
-#include <iostream>
 #include <variant>
 
 namespace RenderCommand {
@@ -21,27 +19,6 @@ namespace RenderCommand {
         , Simulator
     >;
 }
-
-#pragma pack()
-struct SimulatorData {
-    glm::vec3 position;
-    char _pad[4];
-    glm::vec3 velocity;
-    float mass;
-
-    SimulatorData()
-        : position(glm::vec3 {0, 0, 0})
-        , velocity(glm::vec3 {0, 0, 0})
-        , mass(1)
-    {}
-    SimulatorData(glm::vec3 pos, glm::vec3 vel, float _mass)
-        : position(pos)
-        , velocity(vel)
-        , mass(_mass)
-    {}
-};
-
-std::ostream &operator<<(std::ostream &o, SimulatorData &sim);
 
 class Canvas : public QQuickFramebufferObject {
     Q_OBJECT
