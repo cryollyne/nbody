@@ -9,18 +9,26 @@
 #include <QQueue>
 
 #include <variant>
+#include <glm/vec3.hpp>
 
 #include "simulation_object_ui_data_type.h"
+#include "simulation_data.h"
 
 namespace RenderCommand {
     class Render{};
     class Simulator{};
     class SynchronizeObjects{};
+    class SetObject {
+        public:
+        uint32_t index;
+        SimulatorData data;
+    };
 
     using Command = std::variant<
           Render
         , Simulator
         , SynchronizeObjects
+        , SetObject
     >;
 }
 
@@ -70,6 +78,8 @@ public slots:
     void tickSimulator();
     void updateRenderer();
     void synchronizeObjects();
+
+    void setObject(int index, QVector3D position, QVector3D velocity, float mass);
 
     friend class SimRenderer;
 };

@@ -17,6 +17,17 @@ Kirigami.ScrollablePage {
                     right: parent.right
                     top: parent.top
                 }
+
+                function setObject() {
+                    canvas.setObject(
+                        index,
+                        Qt.vector3d(positionX.text, positionY.text, positionZ.text),
+                        Qt.vector3d(velocityX.text, velocityY.text, velocityZ.text),
+                        mass.text
+                    );
+                }
+                id: cardRoot
+
                 ColumnLayout {
                     anchors {
                         left: parent.left
@@ -67,14 +78,23 @@ Kirigami.ScrollablePage {
                         Controls.TextField {
                             Layout.fillWidth: true
                             text: canvas.objects[index].position.x.toPrecision(8);
+                            id: positionX
+                            onAccepted: cardRoot.setObject()
+                            onEditingFinished: cardRoot.setObject()
                         }
                         Controls.TextField {
                             Layout.fillWidth: true
                             text: canvas.objects[index].position.y.toPrecision(8);
+                            id: positionY
+                            onAccepted: cardRoot.setObject()
+                            onEditingFinished: cardRoot.setObject()
                         }
                         Controls.TextField {
                             Layout.fillWidth: true
                             text: canvas.objects[index].position.z.toPrecision(8);
+                            id: positionZ
+                            onAccepted: cardRoot.setObject()
+                            onEditingFinished: cardRoot.setObject()
                         }
                     }
                     Kirigami.Separator {
@@ -117,14 +137,23 @@ Kirigami.ScrollablePage {
                         Controls.TextField {
                             Layout.fillWidth: true
                             text: canvas.objects[index].velocity.x.toPrecision(8);
+                            id: velocityX
+                            onAccepted: cardRoot.setObject()
+                            onEditingFinished: cardRoot.setObject()
                         }
                         Controls.TextField {
                             Layout.fillWidth: true
                             text: canvas.objects[index].velocity.y.toPrecision(8);
+                            id: velocityY
+                            onAccepted: cardRoot.setObject()
+                            onEditingFinished: cardRoot.setObject()
                         }
                         Controls.TextField {
                             Layout.fillWidth: true
                             text: canvas.objects[index].velocity.z.toPrecision(8);
+                            id: velocityZ
+                            onAccepted: cardRoot.setObject()
+                            onEditingFinished: cardRoot.setObject()
                         }
                     }
                     Kirigami.Separator {
@@ -143,6 +172,9 @@ Kirigami.ScrollablePage {
                         visible: !canvas.isSimulationRunning
                         Layout.fillWidth: true
                         text: canvas.objects[index].mass.toPrecision(8);
+                        id: mass
+                        onAccepted: cardRoot.setObject()
+                        onEditingFinished: cardRoot.setObject()
                     }
                 }
             }
