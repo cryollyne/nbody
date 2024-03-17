@@ -49,11 +49,23 @@ Kirigami.ApplicationWindow {
             id: canvas
             anchors.fill: parent
         }
+
+        Kirigami.ActionToolBar {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            actions: [
+                Kirigami.Action {
+                    visible: true
+                    icon.name: pageStack.lastItem === statusPage ? "arrow-right-double" : "arrow-left-double"
+                    onTriggered: pageStack.lastItem === statusPage ? pageStack.pop() : pageStack.push(statusPage)
+                }
+            ]
+        }
     }
     SettingsPage {
         id: settingsPage
     }
-    Kirigami.ScrollablePage {
+    StatusPage {
         id: statusPage
     }
 }
