@@ -24,7 +24,12 @@ Kirigami.ApplicationWindow {
             Kirigami.Action {
                 icon.name: canvas.isSimulationRunning ? "media-playback-pause" : "media-playback-start"
                 tooltip: canvas.isSimulationRunning ? "Pause Simulation" : "Play Simulation"
-                onTriggered: canvas.isSimulationRunning = !canvas.isSimulationRunning
+                onTriggered: {
+                    canvas.isSimulationRunning = !canvas.isSimulationRunning;
+                    if (!canvas.isSimulationRunning) {
+                        canvas.synchronizeObjects();
+                    }
+                }
             },
             Kirigami.Action {
                 // TODO: gray out action when simulation is running
@@ -34,6 +39,7 @@ Kirigami.ApplicationWindow {
                     if (!canvas.isSimulationRunning) {
                         canvas.tickSimulator();
                         canvas.updateRenderer();
+                        canvas.synchronizeObjects();
                     }
                 }
             }

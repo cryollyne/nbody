@@ -157,9 +157,11 @@ void Canvas::synchronizeObjects() {
 QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
     connect(m_simulatorTimer, &QTimer::timeout, this, &Canvas::tickSimulator, Qt::DirectConnection);
     connect(m_frameTimer, &QTimer::timeout, this, &Canvas::updateRenderer, Qt::DirectConnection);
+    connect(m_objectUpdateTimer, &QTimer::timeout, this, &Canvas::synchronizeObjects, Qt::DirectConnection);
     QMetaObject::invokeMethod(m_simulatorTimer, [this](){
-        this->m_simulatorTimer->start(1000/60);
-        this->m_frameTimer->start(1000/30);
+        this->m_simulatorTimer->start(1000.0/m_simulatorTickRate);
+        this->m_frameTimer->start(1000.0/m_frameUpdateRate);
+        this->m_objectUpdateTimer->start(1000.0/m_objectUpdateRate);
     });
     return new SimRenderer(this);
 }
@@ -198,6 +200,22 @@ void Canvas::setFrameUpdateRate(float rate) {
     }
 }
 
+float Canvas::getObjectUpdateRate() const { return m_objectUpdateRate; }
+void Canvas::setObjectUpdateRate(float rate) {
+    if (rate == m_objectUpdateRate)
+        return;
+
+    m_objectUpdateRate = rate;
+    emit objectUpdateRateChanged();
+
+    if (m_objectUpdateTimer->isActive()) {
+        QMetaObject::invokeMethod(m_objectUpdateTimer, [&,this](){
+            this->m_objectUpdateTimer->stop();
+            this->m_objectUpdateTimer->start(1000.0/rate);
+        });
+    }
+}
+
 bool Canvas::isSimulationRunning() const { return m_isSimulationRunning; }
 void Canvas::setIsSimulationRunning(bool r) {
     if (r != m_isSimulationRunning) {
@@ -209,11 +227,13 @@ void Canvas::setIsSimulationRunning(bool r) {
         QMetaObject::invokeMethod(m_simulatorTimer, [this](){
             this->m_simulatorTimer->start(1000.0/m_simulatorTickRate);
             this->m_frameTimer->start(1000.0/m_frameUpdateRate);
+            this->m_objectUpdateTimer->start(1000.0/m_objectUpdateRate);
         });
     } else {
         QMetaObject::invokeMethod(m_simulatorTimer, [this](){
             this->m_simulatorTimer->stop();
             this->m_frameTimer->stop();
+            this->m_objectUpdateTimer->stop();
         });
     }
 }
