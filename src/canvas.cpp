@@ -26,6 +26,8 @@ private:
     void renderCanvas();
     void updateSimulator();
     void setObject(RenderCommand::SetObject obj);
+    void addObject();
+    void deleteObject(uint32_t index);
 
     const Canvas *m_item;
     QQueue<RenderCommand::Command> *m_commandQueue = new QQueue<RenderCommand::Command>;
@@ -70,6 +72,8 @@ void SimRenderer::render() {
             case 1: updateSimulator(); break;
             case 2: break; // this should never happen due to checks in SimRenderer::synchronize()
             case 3: setObject(std::get<RenderCommand::SetObject>(c)); break;
+            case 4: addObject(); break;
+            case 5: deleteObject(std::get<RenderCommand::DeleteObject>(c).index); break;
         }
     }
 }
@@ -145,6 +149,12 @@ void SimRenderer::updateSimulator() {
 void SimRenderer::setObject(RenderCommand::SetObject obj) {
     m_simulatorBuffer.editObject(obj.index, &obj.data);
 }
+void SimRenderer::addObject() {
+    m_simulatorBuffer.addObject(SimulatorData{});
+}
+void SimRenderer::deleteObject(uint32_t index) {
+    m_simulatorBuffer.removeObject(index);
+}
 
 void Canvas::updateRenderer() {
     m_commandQueue->enqueue(RenderCommand::Render{});
@@ -169,6 +179,20 @@ void Canvas::setObject(int index, QVector3D position, QVector3D velocity, float 
     if (!m_isSimulationRunning) {
         updateRenderer();
     }
+}
+void Canvas::addObject() {
+    m_commandQueue->enqueue(RenderCommand::AddObject{});
+    if (!m_isSimulationRunning) {
+        updateRenderer();
+    }
+    emit objectsChanged();
+}
+void Canvas::deleteObject(int index) {
+    m_commandQueue->enqueue(RenderCommand::DeleteObject{static_cast<uint32_t>(index)});
+    if (!m_isSimulationRunning) {
+        updateRenderer();
+    }
+    emit objectsChanged();
 }
 
 QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {

@@ -8,7 +8,17 @@ Kirigami.ScrollablePage {
 
     Component {
         id: objectListDelegate
-        Kirigami.AbstractCard {
+        Kirigami.Card {
+            actions: [
+                Kirigami.Action {
+                    text: "Delete"
+                    onTriggered: {
+                        canvas.deleteObject(index);
+                        canvas.synchronizeObjects();
+                    }
+                    visible: !canvas.isSimulationRunning
+                }
+            ]
             contentItem: Item {
                 implicitWidth: delegateLayout.implicitWidth
                 implicitHeight: delegateLayout.implicitHeight
@@ -192,10 +202,18 @@ Kirigami.ScrollablePage {
             delegate: objectListDelegate
         }
 
-        Controls.Button {
+        RowLayout {
             Layout.alignment: Qt.AlignRight | Qt.AlignBottom
-            text: "Close"
-            onClicked: pageStack.pop()
+
+            Controls.Button {
+                text: "Create Object"
+                onClicked: canvas.addObject();
+                enabled: !canvas.isSimulationRunning
+            }
+            Controls.Button {
+                text: "Close"
+                onClicked: pageStack.pop()
+            }
         }
     }
 }

@@ -23,12 +23,19 @@ namespace RenderCommand {
         uint32_t index;
         SimulatorData data;
     };
+    class AddObject{};
+    class DeleteObject {
+        public:
+        uint32_t index;
+    };
 
     using Command = std::variant<
           Render
         , Simulator
         , SynchronizeObjects
         , SetObject
+        , AddObject
+        , DeleteObject
     >;
 }
 
@@ -80,6 +87,8 @@ public slots:
     void synchronizeObjects();
 
     void setObject(int index, QVector3D position, QVector3D velocity, float mass);
+    void addObject();
+    void deleteObject(int index);
 
     friend class SimRenderer;
 };
