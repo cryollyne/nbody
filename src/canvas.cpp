@@ -61,6 +61,9 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
 }
 
 void SimRenderer::render() {
+    if (m_commandQueue->isEmpty())
+        renderCanvas();
+
     while (!m_commandQueue->isEmpty()) {
         RenderCommand::Command c = m_commandQueue->dequeue();
         switch (c.index()) {
