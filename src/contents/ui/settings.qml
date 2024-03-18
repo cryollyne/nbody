@@ -9,12 +9,14 @@ Kirigami.ScrollablePage {
     function open() {
         tickRateField.text = canvas.tickRate;
         frameUpdateRateField.text = canvas.frameUpdateRate;
+        objectUpdateRateField.text = canvas.objectUpdateRate;
         pageStack.push(settingsPage);
     }
 
     function applyChanges() {
         canvas.tickRate = tickRateField.text;
         canvas.frameUpdateRate = frameUpdateRateField.text;
+        canvas.objectUpdateRate = objectUpdateRateField.text;
     }
 
     ColumnLayout {
@@ -30,6 +32,11 @@ Kirigami.ScrollablePage {
             Controls.TextField {
                 id: frameUpdateRateField
                 Kirigami.FormData.label: "Frame update rate"
+                validator: DoubleValidator{bottom: 1}
+            }
+            Controls.TextField {
+                id: objectUpdateRateField
+                Kirigami.FormData.label: "Object update rate"
                 validator: DoubleValidator{bottom: 1}
             }
         }
