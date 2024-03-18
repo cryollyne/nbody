@@ -12,7 +12,10 @@ Kirigami.ScrollablePage {
             actions: [
                 Kirigami.Action {
                     text: "Delete"
-                    onTriggered: canvas.deleteObject(index); 
+                    onTriggered: {
+                        canvas.deleteObject(index);
+                        canvas.synchronizeObjects();
+                    }
                     visible: !canvas.isSimulationRunning
                 }
             ]

@@ -10,8 +10,9 @@
 
 class SimRenderer : public QQuickFramebufferObject::Renderer {
 public:
-    SimRenderer()
-        : m_renderer(nullptr)
+    SimRenderer(const Canvas *fbo)
+        : m_item(fbo)
+        , m_renderer(nullptr)
         , m_simulator(nullptr)
     {}
 
@@ -28,7 +29,7 @@ private:
     void addObject();
     void deleteObject(uint32_t index);
 
-    Canvas *m_item;
+    const Canvas *m_item;
     QQueue<RenderCommand::Command> *m_commandQueue = new QQueue<RenderCommand::Command>;
 
     QOpenGLShaderProgram *m_renderer;
@@ -72,7 +73,7 @@ void SimRenderer::render() {
         switch (c.index()) {
             case 0: renderCanvas(); break;
             case 1: updateSimulator(); break;
-            case 2: synchronizeObjects(m_item); break;
+            case 2: break; // this should never happen due to checks in SimRenderer::synchronize()
             case 3: setObject(std::get<RenderCommand::SetObject>(c)); break;
             case 4: addObject(); break;
             case 5: deleteObject(std::get<RenderCommand::DeleteObject>(c).index); break;
@@ -82,9 +83,17 @@ void SimRenderer::render() {
 
 void SimRenderer::synchronize(QQuickFramebufferObject *item) {
     Canvas *canvas = static_cast<Canvas*>(item);
-    m_item = canvas;
-    while (!canvas->m_commandQueue->isEmpty())
-        m_commandQueue->enqueue(canvas->m_commandQueue->dequeue());
+    bool syncObj = false;
+    while (!canvas->m_commandQueue->isEmpty()) {
+        RenderCommand::Command command = canvas->m_commandQueue->dequeue();
+        if (command.index() != 2)
+            m_commandQueue->enqueue(command);
+        else
+            syncObj = true;
+    }
+
+    if (syncObj)
+        synchronizeObjects(canvas);
 }
 
 void SimRenderer::synchronizeObjects(Canvas *canvas) {
@@ -94,20 +103,18 @@ void SimRenderer::synchronizeObjects(Canvas *canvas) {
 
     gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_simulatorBuffer.buffObject());
     SimulatorData *data = (SimulatorData*)gl->glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, length*sizeof(SimulatorData), GL_MAP_READ_BIT);
-    QMetaObject::invokeMethod(canvas, [&]() {
-        canvas->m_objects.clear();
-        for (uint32_t i = 0; i < length; i++) {
-            SimulatorData &current = data[i];
-            QVariant obj;
-            obj.setValue(SimulatorObject {
-                current.position,
-                current.velocity,
-                current.mass
-            });
-            canvas->m_objects.append(obj);
-        }
-        emit canvas->objectsChanged();
-    }, Qt::DirectConnection);
+
+    canvas->m_objects.clear();
+    for (uint32_t i = 0; i < length; i++) {
+        SimulatorData &current = data[i];
+        QVariant obj;
+        obj.setValue(SimulatorObject {
+            current.position,
+            current.velocity,
+            current.mass
+        });
+        canvas->m_objects.append(obj);
+    }
     gl->glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
 
@@ -163,6 +170,7 @@ void Canvas::tickSimulator() {
 void Canvas::synchronizeObjects() {
     m_commandQueue->enqueue(RenderCommand::SynchronizeObjects{});
     update();
+    emit objectsChanged();
 }
 void Canvas::setObject(int index, QVector3D position, QVector3D velocity, float mass) {
     SimulatorData data {
@@ -177,13 +185,17 @@ void Canvas::setObject(int index, QVector3D position, QVector3D velocity, float 
 }
 void Canvas::addObject() {
     m_commandQueue->enqueue(RenderCommand::AddObject{});
-    updateRenderer();
-    synchronizeObjects();
+    if (!m_isSimulationRunning) {
+        updateRenderer();
+    }
+    emit objectsChanged();
 }
 void Canvas::deleteObject(int index) {
     m_commandQueue->enqueue(RenderCommand::DeleteObject{static_cast<uint32_t>(index)});
-    updateRenderer();
-    synchronizeObjects();
+    if (!m_isSimulationRunning) {
+        updateRenderer();
+    }
+    emit objectsChanged();
 }
 
 QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
@@ -195,7 +207,7 @@ QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
         this->m_frameTimer->start(1000.0/m_frameUpdateRate);
         this->m_objectUpdateTimer->start(1000.0/m_objectUpdateRate);
     });
-    return new SimRenderer();
+    return new SimRenderer(this);
 }
 
 
