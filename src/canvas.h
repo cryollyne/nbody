@@ -29,13 +29,23 @@ namespace RenderCommand {
         uint32_t index;
     };
 
-    using Command = std::variant<
+    // runs asynchronously
+    using RenderCommand = std::variant<
           Render
-        , Simulator
+    >;
+
+    // runs synchronously during the synchronization stage
+    using SimulatorCommand = std::variant<
+          Simulator
         , SynchronizeObjects
         , SetObject
         , AddObject
         , DeleteObject
+    >;
+
+    using Command = std::variant<
+          RenderCommand
+        , SimulatorCommand
     >;
 }
 
