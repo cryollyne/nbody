@@ -59,7 +59,7 @@ class Canvas : public QQuickFramebufferObject {
     QVariantList m_objects {};
     float m_simulatorTickRate = 60.0f;
     float m_frameUpdateRate = 30.0f;
-    float m_objectUpdateRate = 10.0f;
+    float m_objectUpdateRate = 24.0f;
     bool m_isSimulationRunning = true;
 
 public:

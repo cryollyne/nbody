@@ -271,13 +271,11 @@ void Canvas::setIsSimulationRunning(bool r) {
         QMetaObject::invokeMethod(m_simulatorTimer, [this](){
             this->m_simulatorTimer->start(1000.0/m_simulatorTickRate);
             this->m_frameTimer->start(1000.0/m_frameUpdateRate);
-            this->m_objectUpdateTimer->start(1000.0/m_objectUpdateRate);
         });
     } else {
         QMetaObject::invokeMethod(m_simulatorTimer, [this](){
             this->m_simulatorTimer->stop();
             this->m_frameTimer->stop();
-            this->m_objectUpdateTimer->stop();
         });
     }
 }
