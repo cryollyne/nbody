@@ -29,7 +29,7 @@ private:
     void deleteObject(uint32_t index);
 
     Canvas *m_item;
-    QQueue<RenderCommand::Command> *m_commandQueue = new QQueue<RenderCommand::Command>;
+    QQueue<RenderCommand::RenderCommand> *m_commandQueue = new QQueue<RenderCommand::RenderCommand>;
 
     QOpenGLShaderProgram *m_renderer;
     QOpenGLShaderProgram *m_simulator;
@@ -68,14 +68,9 @@ void SimRenderer::render() {
         renderCanvas();
 
     while (!m_commandQueue->isEmpty()) {
-        RenderCommand::Command c = m_commandQueue->dequeue();
+        RenderCommand::RenderCommand c = m_commandQueue->dequeue();
         switch (c.index()) {
             case 0: renderCanvas(); break;
-            case 1: updateSimulator(); break;
-            case 2: synchronizeObjects(m_item); break;
-            case 3: setObject(std::get<RenderCommand::SetObject>(c)); break;
-            case 4: addObject(); break;
-            case 5: deleteObject(std::get<RenderCommand::DeleteObject>(c).index); break;
         }
     }
 }
@@ -83,8 +78,21 @@ void SimRenderer::render() {
 void SimRenderer::synchronize(QQuickFramebufferObject *item) {
     Canvas *canvas = static_cast<Canvas*>(item);
     m_item = canvas;
-    while (!canvas->m_commandQueue->isEmpty())
-        m_commandQueue->enqueue(canvas->m_commandQueue->dequeue());
+    while (!canvas->m_commandQueue->isEmpty()) {
+        RenderCommand::Command cmd = canvas->m_commandQueue->dequeue();
+        if (cmd.index() == 0)
+            m_commandQueue->enqueue(std::get<RenderCommand::RenderCommand>(cmd));
+        else {
+            RenderCommand::SimulatorCommand c = std::get<RenderCommand::SimulatorCommand>(cmd);
+            switch (c.index()) {
+                case 0: updateSimulator(); break;
+                case 1: synchronizeObjects(canvas); break;
+                case 2: setObject(std::get<RenderCommand::SetObject>(c)); break;
+                case 3: addObject(); break;
+                case 4: deleteObject(std::get<RenderCommand::DeleteObject>(c).index); break;
+            }
+        }
+    }
 }
 
 void SimRenderer::synchronizeObjects(Canvas *canvas) {
@@ -94,21 +102,21 @@ void SimRenderer::synchronizeObjects(Canvas *canvas) {
 
     gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_simulatorBuffer.buffObject());
     SimulatorData *data = (SimulatorData*)gl->glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, length*sizeof(SimulatorData), GL_MAP_READ_BIT);
-    QMetaObject::invokeMethod(canvas, [&]() {
-        canvas->m_objects.clear();
-        for (uint32_t i = 0; i < length; i++) {
-            SimulatorData &current = data[i];
-            QVariant obj;
-            obj.setValue(SimulatorObject {
-                current.position,
-                current.velocity,
-                current.mass
-            });
-            canvas->m_objects.append(obj);
-        }
-        emit canvas->objectsChanged();
-    }, Qt::DirectConnection);
+    canvas->m_objects.clear();
+    for (uint32_t i = 0; i < length; i++) {
+        SimulatorData &current = data[i];
+        QVariant obj;
+        obj.setValue(SimulatorObject {
+            current.position,
+            current.velocity,
+            current.mass
+        });
+        canvas->m_objects.append(obj);
+        // QList::append() is very slow for some reason
+        // TODO: optimize performance
+    }
     gl->glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+    emit canvas->objectsChanged();
 }
 
 void SimRenderer::renderCanvas() {
