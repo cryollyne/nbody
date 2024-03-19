@@ -3,6 +3,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
+#include <cmath>
 #include "canvas.h"
 #include "backend.h"
 #include "dynamic_buffer.h"
@@ -23,6 +24,8 @@ public:
 private:
 
     void renderCanvas();
+    void moveCamera(RenderCommand::MoveCamera cmd);
+
     void updateSimulator();
     void setObject(RenderCommand::SetObject obj);
     void addObject();
@@ -34,6 +37,8 @@ private:
     QOpenGLShaderProgram *m_renderer;
     QOpenGLShaderProgram *m_simulator;
     DynamicBufferArray m_simulatorBuffer;
+
+    QMatrix4x4 m_cameraModel = QMatrix4x4();
 };
 
 QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size) {
@@ -71,6 +76,7 @@ void SimRenderer::render() {
         RenderCommand::RenderCommand c = m_commandQueue->dequeue();
         switch (c.index()) {
             case 0: renderCanvas(); break;
+            case 1: moveCamera(std::get<RenderCommand::MoveCamera>(c)); break;
         }
     }
 }
@@ -133,10 +139,39 @@ void SimRenderer::renderCanvas() {
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     gl->glEnable(GL_PROGRAM_POINT_SIZE);
 
+    m_renderer->setUniformValue("view", m_cameraModel.inverted());
+
     gl->glDrawArraysInstanced(GL_POINTS, 0, m_simulatorBuffer.size(), m_simulatorBuffer.size());
 
     m_renderer->release();
     m_item->window()->endExternalCommands();
+}
+
+void SimRenderer::moveCamera(RenderCommand::MoveCamera cmd) {
+    float x = cmd.x;
+    float y = cmd.y;
+
+    float theta = sqrt(x*x + y*y);
+    QVector3D rotAxis = (m_cameraModel * QVector3D{-y, x, 0}).normalized();
+
+    QMatrix3x3 I = QMatrix3x3();
+    QMatrix3x3 W = QMatrix3x3(new float[] {
+        0,              -rotAxis.z(),   rotAxis.y(),
+        rotAxis.z(),    0,              -rotAxis.x(),
+        -rotAxis.y(),   rotAxis.x(),    0
+    });
+
+    // Rodrigues rotation formula
+    QMatrix3x3 rot = I + (float)sin(theta)*W + (float)(1-cos(theta))*W*W;
+
+    QMatrix4x4 rot4 = QMatrix4x4(
+        rot(0, 0), rot(0, 1), rot(0, 2), 0,
+        rot(1, 0), rot(1, 1), rot(1, 2), 0,
+        rot(2, 0), rot(2, 1), rot(2, 2), 0,
+        0,          0,          0,          1
+    );
+
+    m_cameraModel = rot4 * m_cameraModel;
 }
 
 void SimRenderer::updateSimulator() {
@@ -192,6 +227,11 @@ void Canvas::deleteObject(int index) {
     m_commandQueue->enqueue(RenderCommand::DeleteObject{static_cast<uint32_t>(index)});
     updateRenderer();
     synchronizeObjects();
+}
+void Canvas::moveCamera(float x, float y) {
+    m_commandQueue->enqueue(RenderCommand::MoveCamera{m_sensitivity*x, m_sensitivity*y});
+    if (!m_isSimulationRunning)
+        updateRenderer();
 }
 
 QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {

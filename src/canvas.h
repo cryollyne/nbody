@@ -16,6 +16,12 @@
 
 namespace RenderCommand {
     class Render{};
+    class MoveCamera{
+        public:
+        float x;
+        float y;
+    };
+
     class Simulator{};
     class SynchronizeObjects{};
     class SetObject {
@@ -32,6 +38,7 @@ namespace RenderCommand {
     // runs asynchronously
     using RenderCommand = std::variant<
           Render
+        , MoveCamera
     >;
 
     // runs synchronously during the synchronization stage
@@ -70,6 +77,7 @@ class Canvas : public QQuickFramebufferObject {
     float m_simulatorTickRate = 60.0f;
     float m_frameUpdateRate = 30.0f;
     float m_objectUpdateRate = 10.0f;
+    float m_sensitivity = 0.001f;
     bool m_isSimulationRunning = true;
 
 public:
@@ -99,6 +107,7 @@ public slots:
     void setObject(int index, QVector3D position, QVector3D velocity, float mass);
     void addObject();
     void deleteObject(int index);
+    void moveCamera(float x, float y);
 
     friend class SimRenderer;
 };
