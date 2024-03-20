@@ -296,6 +296,14 @@ void Canvas::setObjectUpdateRate(float rate) {
     }
 }
 
+float Canvas::getSensitivity() const { return m_sensitivity; }
+void Canvas::setSensitivity(float sensitivity) {
+    if (sensitivity == m_sensitivity)
+        return;
+    m_sensitivity = sensitivity;
+    emit sensitivityChanged();
+}
+
 bool Canvas::isSimulationRunning() const { return m_isSimulationRunning; }
 void Canvas::setIsSimulationRunning(bool r) {
     if (r != m_isSimulationRunning) {

@@ -10,6 +10,7 @@ Kirigami.ScrollablePage {
         tickRateField.text = canvas.tickRate;
         frameUpdateRateField.text = canvas.frameUpdateRate;
         objectUpdateRateField.text = canvas.objectUpdateRate;
+        cameraSensitivitySlider.value = canvas.sensitivity;
         pageStack.push(settingsPage);
     }
 
@@ -17,6 +18,7 @@ Kirigami.ScrollablePage {
         canvas.tickRate = tickRateField.text;
         canvas.frameUpdateRate = frameUpdateRateField.text;
         canvas.objectUpdateRate = objectUpdateRateField.text;
+        canvas.sensitivity = cameraSensitivitySlider.value;
     }
 
     ColumnLayout {
@@ -38,6 +40,15 @@ Kirigami.ScrollablePage {
                 id: objectUpdateRateField
                 Kirigami.FormData.label: "Object update rate"
                 validator: DoubleValidator{bottom: 1}
+            }
+            Controls.Slider {
+                Kirigami.FormData.label: "Camera sensitivity"
+                id: cameraSensitivitySlider
+                from: 0
+                to: 0.01
+            }
+            Controls.Label {
+                text: `${cameraSensitivitySlider.value.toPrecision(4)} rad/px`
             }
         }
 

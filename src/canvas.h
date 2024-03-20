@@ -71,13 +71,14 @@ class Canvas : public QQuickFramebufferObject {
     Q_PROPERTY(float tickRate READ getTickRate WRITE setTickRate NOTIFY tickRateChanged)
     Q_PROPERTY(float frameUpdateRate READ getFrameUpdateRate WRITE setFrameUpdateRate NOTIFY frameUpdateRateChanged)
     Q_PROPERTY(float objectUpdateRate READ getObjectUpdateRate WRITE setObjectUpdateRate NOTIFY objectUpdateRateChanged)
+    Q_PROPERTY(float sensitivity READ getSensitivity WRITE setSensitivity NOTIFY sensitivityChanged)
     Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
 
     QVariantList m_objects {};
     float m_simulatorTickRate = 60.0f;
     float m_frameUpdateRate = 30.0f;
     float m_objectUpdateRate = 10.0f;
-    float m_sensitivity = 0.001f;
+    float m_sensitivity = 0.005f;
     bool m_isSimulationRunning = true;
 
 public:
@@ -85,11 +86,13 @@ public:
     float getTickRate() const;
     float getFrameUpdateRate() const;
     float getObjectUpdateRate() const;
+    float getSensitivity() const;
     bool isSimulationRunning() const;
 
     void setTickRate(float rate);
     void setFrameUpdateRate(float rate);
     void setObjectUpdateRate(float rate);
+    void setSensitivity(float sensitivity);
     void setIsSimulationRunning(bool r);
 
 signals:
@@ -97,6 +100,7 @@ signals:
     void tickRateChanged();
     void frameUpdateRateChanged();
     void objectUpdateRateChanged();
+    void sensitivityChanged();
     void isSimulationRunningChanged();
 
 public slots:
