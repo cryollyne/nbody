@@ -247,7 +247,10 @@ void Canvas::deleteObject(int index) {
     synchronizeObjects();
 }
 void Canvas::moveCamera(float x, float y) {
-    m_commandQueue->enqueue(RenderCommand::MoveCamera{m_sensitivity*x, m_sensitivity*y});
+    m_commandQueue->enqueue(RenderCommand::MoveCamera{
+        (m_cameraInvert?-1:1)*m_cameraSensitivity*x,
+        (m_cameraInvert?-1:1)*m_cameraSensitivity*y
+    });
     if (!m_isSimulationRunning)
         updateRenderer();
 }
@@ -321,11 +324,11 @@ void Canvas::setObjectUpdateRate(float rate) {
     }
 }
 
-float Canvas::getSensitivity() const { return m_sensitivity; }
+float Canvas::getSensitivity() const { return m_cameraSensitivity; }
 void Canvas::setSensitivity(float sensitivity) {
-    if (sensitivity == m_sensitivity)
+    if (sensitivity == m_cameraSensitivity)
         return;
-    m_sensitivity = sensitivity;
+    m_cameraSensitivity = sensitivity;
     emit sensitivityChanged();
 }
 
@@ -335,6 +338,14 @@ void Canvas::setZoomSensitivity(float sensitivity) {
         return;
     m_zoomSensitivity = sensitivity;
     emit zoomSensitivityChanged();
+}
+
+bool Canvas::getCameraInvert() const { return m_zoomInvert; }
+void Canvas::setCameraInvert(bool invert) {
+    if (invert == m_cameraInvert)
+        return;
+    m_cameraInvert = invert;
+    emit cameraInvertChanged();
 }
 
 bool Canvas::getZoomInvert() const { return m_zoomInvert; }

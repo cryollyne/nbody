@@ -78,6 +78,7 @@ class Canvas : public QQuickFramebufferObject {
     Q_PROPERTY(float objectUpdateRate READ getObjectUpdateRate WRITE setObjectUpdateRate NOTIFY objectUpdateRateChanged)
     Q_PROPERTY(float sensitivity READ getSensitivity WRITE setSensitivity NOTIFY sensitivityChanged)
     Q_PROPERTY(float zoomSensitivity READ getZoomSensitivity WRITE setZoomSensitivity NOTIFY zoomSensitivityChanged)
+    Q_PROPERTY(bool cameraInvert READ getCameraInvert WRITE setCameraInvert NOTIFY cameraInvertChanged)
     Q_PROPERTY(bool zoomInvert READ getZoomInvert WRITE setZoomInvert NOTIFY zoomInvertChanged)
     Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
 
@@ -85,8 +86,10 @@ class Canvas : public QQuickFramebufferObject {
     float m_simulatorTickRate = 60.0f;
     float m_frameUpdateRate = 30.0f;
     float m_objectUpdateRate = 10.0f;
-    float m_sensitivity = 0.005f;
+    float m_cameraSensitivity = 0.005f;
     float m_zoomSensitivity = 0.001;
+
+    bool m_cameraInvert = false;
     bool m_zoomInvert = false;
     bool m_isSimulationRunning = true;
 
@@ -97,6 +100,7 @@ public:
     float getObjectUpdateRate() const;
     float getSensitivity() const;
     float getZoomSensitivity() const;
+    bool getCameraInvert() const;
     bool getZoomInvert() const;
     bool isSimulationRunning() const;
 
@@ -105,6 +109,7 @@ public:
     void setObjectUpdateRate(float rate);
     void setSensitivity(float sensitivity);
     void setZoomSensitivity(float sensitivity);
+    void setCameraInvert (bool invert);
     void setZoomInvert(bool invert);
     void setIsSimulationRunning(bool r);
 
@@ -115,6 +120,7 @@ signals:
     void objectUpdateRateChanged();
     void sensitivityChanged();
     void zoomSensitivityChanged();
+    void cameraInvertChanged();
     void zoomInvertChanged();
     void isSimulationRunningChanged();
 

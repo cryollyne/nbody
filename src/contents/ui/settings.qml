@@ -11,6 +11,7 @@ Kirigami.ScrollablePage {
         frameUpdateRateField.text = canvas.frameUpdateRate;
         objectUpdateRateField.text = canvas.objectUpdateRate;
         cameraSensitivitySlider.value = canvas.sensitivity;
+        cameraInvertCheckBox.checked = canvas.cameraInvert;
         cameraZoomSensitivitySlider.value = canvas.zoomSensitivity;
         cameraZoomInvertCheckBox.checked = canvas.zoomInvert;
         pageStack.push(settingsPage);
@@ -21,6 +22,7 @@ Kirigami.ScrollablePage {
         canvas.frameUpdateRate = frameUpdateRateField.text;
         canvas.objectUpdateRate = objectUpdateRateField.text;
         canvas.sensitivity = cameraSensitivitySlider.value;
+        canvas.cameraInvert = cameraInvertCheckBox.checked;
         canvas.zoomSensitivity = cameraZoomSensitivitySlider.value;
         canvas.zoomInvert = cameraZoomInvertCheckBox.checked;
     }
@@ -50,6 +52,10 @@ Kirigami.ScrollablePage {
                 id: cameraSensitivitySlider
                 from: 0
                 to: 0.01
+            }
+            Controls.CheckBox {
+                id: cameraInvertCheckBox
+                Kirigami.FormData.label: "Invert camera movement"
             }
             Controls.Label {
                 text: `${cameraSensitivitySlider.value.toPrecision(4)} rad/px`
