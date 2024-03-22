@@ -252,7 +252,9 @@ void Canvas::moveCamera(float x, float y) {
         updateRenderer();
 }
 void Canvas::zoomCamera(float amount) {
-    m_commandQueue->enqueue(RenderCommand::ZoomCamera{(float)exp(amount/1000)});
+    m_commandQueue->enqueue(RenderCommand::ZoomCamera{
+        (float)exp( (m_zoomInvert?-1:1) * amount * m_zoomSensitivity )
+    });
     if (!m_isSimulationRunning)
         updateRenderer();
 }
@@ -325,6 +327,22 @@ void Canvas::setSensitivity(float sensitivity) {
         return;
     m_sensitivity = sensitivity;
     emit sensitivityChanged();
+}
+
+float Canvas::getZoomSensitivity() const { return m_zoomSensitivity; }
+void Canvas::setZoomSensitivity(float sensitivity) {
+    if (sensitivity == m_zoomSensitivity)
+        return;
+    m_zoomSensitivity = sensitivity;
+    emit zoomSensitivityChanged();
+}
+
+bool Canvas::getZoomInvert() const { return m_zoomInvert; }
+void Canvas::setZoomInvert(bool invert) {
+    if (invert == m_zoomInvert)
+        return;
+    m_zoomInvert = invert;
+    emit zoomInvertChanged();
 }
 
 bool Canvas::isSimulationRunning() const { return m_isSimulationRunning; }
