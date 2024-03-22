@@ -4,6 +4,8 @@
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
 #include <cmath>
+#include <algorithm>
+#include <limits>
 #include "canvas.h"
 #include "backend.h"
 #include "dynamic_buffer.h"
@@ -25,6 +27,7 @@ private:
 
     void renderCanvas();
     void moveCamera(RenderCommand::MoveCamera cmd);
+    void zoomCamera(RenderCommand::ZoomCamera cmd);
 
     void updateSimulator();
     void setObject(RenderCommand::SetObject obj);
@@ -39,6 +42,8 @@ private:
     DynamicBufferArray m_simulatorBuffer;
 
     QMatrix4x4 m_cameraModel = QMatrix4x4();
+    QVector2D m_screenSize;
+    float m_zoom = 1.0f;
 };
 
 QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size) {
@@ -65,6 +70,8 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
         m_simulatorBuffer.addObject({glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10});
     }
 
+    m_screenSize = QVector2D(size.width(), size.height());
+
     return new QOpenGLFramebufferObject(size, format);
 }
 
@@ -77,6 +84,7 @@ void SimRenderer::render() {
         switch (c.index()) {
             case 0: renderCanvas(); break;
             case 1: moveCamera(std::get<RenderCommand::MoveCamera>(c)); break;
+            case 2: zoomCamera(std::get<RenderCommand::ZoomCamera>(c)); break;
         }
     }
 }
@@ -140,6 +148,8 @@ void SimRenderer::renderCanvas() {
     gl->glEnable(GL_PROGRAM_POINT_SIZE);
 
     m_renderer->setUniformValue("view", m_cameraModel.inverted());
+    m_renderer->setUniformValue("zoom", m_zoom);
+    m_renderer->setUniformValue("screenSize", m_screenSize);
 
     gl->glDrawArraysInstanced(GL_POINTS, 0, m_simulatorBuffer.size(), m_simulatorBuffer.size());
 
@@ -172,6 +182,14 @@ void SimRenderer::moveCamera(RenderCommand::MoveCamera cmd) {
     );
 
     m_cameraModel = rot4 * m_cameraModel;
+}
+
+void SimRenderer::zoomCamera(RenderCommand::ZoomCamera cmd) {
+    m_zoom = std::clamp(
+        m_zoom * cmd.amount,
+        std::numeric_limits<float>::min(),
+        std::numeric_limits<float>::max()
+    );
 }
 
 void SimRenderer::updateSimulator() {
@@ -230,6 +248,11 @@ void Canvas::deleteObject(int index) {
 }
 void Canvas::moveCamera(float x, float y) {
     m_commandQueue->enqueue(RenderCommand::MoveCamera{m_sensitivity*x, m_sensitivity*y});
+    if (!m_isSimulationRunning)
+        updateRenderer();
+}
+void Canvas::zoomCamera(float amount) {
+    m_commandQueue->enqueue(RenderCommand::ZoomCamera{(float)exp(amount/1000)});
     if (!m_isSimulationRunning)
         updateRenderer();
 }

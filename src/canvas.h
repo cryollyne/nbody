@@ -21,6 +21,10 @@ namespace RenderCommand {
         float x;
         float y;
     };
+    class ZoomCamera {
+        public:
+        float amount;
+    };
 
     class Simulator{};
     class SynchronizeObjects{};
@@ -39,6 +43,7 @@ namespace RenderCommand {
     using RenderCommand = std::variant<
           Render
         , MoveCamera
+        , ZoomCamera
     >;
 
     // runs synchronously during the synchronization stage
@@ -111,7 +116,9 @@ public slots:
     void setObject(int index, QVector3D position, QVector3D velocity, float mass);
     void addObject();
     void deleteObject(int index);
+
     void moveCamera(float x, float y);
+    void zoomCamera(float amount);
 
     friend class SimRenderer;
 };

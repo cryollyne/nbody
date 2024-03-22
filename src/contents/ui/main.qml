@@ -60,6 +60,7 @@ Kirigami.ApplicationWindow {
                 oldX = mouse.x;
                 oldY = mouse.y;
             }
+            onWheel: canvas.zoomCamera(wheel.angleDelta.y)
         }
 
         Canvas {
