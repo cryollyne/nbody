@@ -6,8 +6,9 @@ struct Object {
 };
 
 uniform mat4 view;
-uniform vec2 screenSize;
-uniform float zoom;
+uniform mat4 projection;
+uniform bool orthographic;
+
 uniform int focus = -1;
 
 layout(binding = 0, std430) buffer SSBO {
@@ -20,5 +21,9 @@ void main() {
     if (focus >= 0)
         focusPosition = vec4(val.obj[focus].position, 0);
     gl_PointSize = 5.0;
-    gl_Position = vec4(zoom/screenSize, 1, 1) * (view*(position - focusPosition));
+    if (orthographic) {
+        gl_Position = projection * view*(position - focusPosition);
+    } else {
+        // TODO
+    }
 }

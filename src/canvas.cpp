@@ -43,9 +43,11 @@ private:
     DynamicBufferArray m_simulatorBuffer;
 
     QMatrix4x4 m_cameraModel = QMatrix4x4();
-    QVector2D m_screenSize;
     int m_focusIndex = -1;
+    float m_aspectRatio;
     float m_zoom = 1.0f;
+
+    bool m_orthographic = true;
 };
 
 QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size) {
@@ -72,7 +74,7 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
         m_simulatorBuffer.addObject({glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10});
     }
 
-    m_screenSize = QVector2D(size.width(), size.height());
+    m_aspectRatio = (float)size.height()/(float)size.width();
 
     return new QOpenGLFramebufferObject(size, format);
 }
@@ -150,10 +152,25 @@ void SimRenderer::renderCanvas() {
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     gl->glEnable(GL_PROGRAM_POINT_SIZE);
 
+    if (m_orthographic) {
+        QMatrix4x4 proj = QMatrix4x4(
+            m_zoom * m_aspectRatio, 0, 0, 0,
+            0, m_zoom, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        );
+        m_renderer->setUniformValue("orthographic", true);
+        m_renderer->setUniformValue("projection", proj);
+    } else {
+        QMatrix4x4 proj = QMatrix4x4(
+            // TODO
+        );
+        m_renderer->setUniformValue("orthographic", false);
+        m_renderer->setUniformValue("projection", proj);
+    }
+
     m_renderer->setUniformValue("focus", m_focusIndex);
     m_renderer->setUniformValue("view", m_cameraModel.inverted());
-    m_renderer->setUniformValue("zoom", m_zoom);
-    m_renderer->setUniformValue("screenSize", m_screenSize);
 
     gl->glDrawArraysInstanced(GL_POINTS, 0, m_simulatorBuffer.size(), m_simulatorBuffer.size());
 
