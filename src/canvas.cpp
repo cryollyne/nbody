@@ -162,8 +162,13 @@ void SimRenderer::renderCanvas() {
         m_renderer->setUniformValue("orthographic", true);
         m_renderer->setUniformValue("projection", proj);
     } else {
+        float n = m_zoom/16;    // near clip plane
+        float f = 1024*m_zoom;  // far clip plane
         QMatrix4x4 proj = QMatrix4x4(
-            // TODO
+            m_aspectRatio,  0,      0,      0,
+            0,              1,      0,      0,
+            0,              0,      1/f,    (m_zoom - n)/f - 1,
+            0,              0,      1,      m_zoom
         );
         m_renderer->setUniformValue("orthographic", false);
         m_renderer->setUniformValue("projection", proj);

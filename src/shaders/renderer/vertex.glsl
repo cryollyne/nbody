@@ -15,6 +15,15 @@ layout(binding = 0, std430) buffer SSBO {
     Object obj[];
 } val;
 
+vec4 perspectiveDivide(vec4 i) {
+    return vec4(
+        i.x/i.w,
+        i.y/i.w,
+        i.z,
+        1
+    );
+}
+
 void main() {
     vec4 position = vec4(val.obj[gl_InstanceID].position, 1);
     vec4 focusPosition = vec4(0);
@@ -24,6 +33,6 @@ void main() {
     if (orthographic) {
         gl_Position = projection * view*(position - focusPosition);
     } else {
-        // TODO
+        gl_Position = perspectiveDivide(projection * view*(position - focusPosition));
     }
 }
