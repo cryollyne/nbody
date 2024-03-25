@@ -28,6 +28,7 @@ private:
     void renderCanvas();
     void moveCamera(RenderCommand::MoveCamera cmd);
     void zoomCamera(RenderCommand::ZoomCamera cmd);
+    void focusObject(RenderCommand::FocusObject cmd);
 
     void updateSimulator();
     void setObject(RenderCommand::SetObject obj);
@@ -43,6 +44,7 @@ private:
 
     QMatrix4x4 m_cameraModel = QMatrix4x4();
     QVector2D m_screenSize;
+    int m_focusIndex = -1;
     float m_zoom = 1.0f;
 };
 
@@ -85,6 +87,7 @@ void SimRenderer::render() {
             case 0: renderCanvas(); break;
             case 1: moveCamera(std::get<RenderCommand::MoveCamera>(c)); break;
             case 2: zoomCamera(std::get<RenderCommand::ZoomCamera>(c)); break;
+            case 3: focusObject(std::get<RenderCommand::FocusObject>(c)); break;
         }
     }
 }
@@ -147,6 +150,7 @@ void SimRenderer::renderCanvas() {
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     gl->glEnable(GL_PROGRAM_POINT_SIZE);
 
+    m_renderer->setUniformValue("focus", m_focusIndex);
     m_renderer->setUniformValue("view", m_cameraModel.inverted());
     m_renderer->setUniformValue("zoom", m_zoom);
     m_renderer->setUniformValue("screenSize", m_screenSize);
@@ -190,6 +194,10 @@ void SimRenderer::zoomCamera(RenderCommand::ZoomCamera cmd) {
         std::numeric_limits<float>::min(),
         std::numeric_limits<float>::max()
     );
+}
+
+void SimRenderer::focusObject(RenderCommand::FocusObject cmd) {
+    m_focusIndex = cmd.index;
 }
 
 void SimRenderer::updateSimulator() {
@@ -338,6 +346,17 @@ void Canvas::setZoomSensitivity(float sensitivity) {
         return;
     m_zoomSensitivity = sensitivity;
     emit zoomSensitivityChanged();
+}
+
+int Canvas::getFocusIndex() const { return m_focusIndex; }
+void Canvas::setFocusIndex(int index) {
+    if (m_focusIndex == index)
+        return;
+    m_focusIndex = index;
+    m_commandQueue->enqueue(RenderCommand::FocusObject{index});
+    if (!m_isSimulationRunning)
+        updateRenderer();
+    emit focusIndexChanged();
 }
 
 bool Canvas::getCameraInvert() const { return m_zoomInvert; }

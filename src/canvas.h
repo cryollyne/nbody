@@ -25,6 +25,10 @@ namespace RenderCommand {
         public:
         float amount;
     };
+    class FocusObject {
+        public:
+        int index;
+    };
 
     class Simulator{};
     class SynchronizeObjects{};
@@ -44,6 +48,7 @@ namespace RenderCommand {
           Render
         , MoveCamera
         , ZoomCamera
+        , FocusObject
     >;
 
     // runs synchronously during the synchronization stage
@@ -78,6 +83,7 @@ class Canvas : public QQuickFramebufferObject {
     Q_PROPERTY(float objectUpdateRate READ getObjectUpdateRate WRITE setObjectUpdateRate NOTIFY objectUpdateRateChanged)
     Q_PROPERTY(float sensitivity READ getSensitivity WRITE setSensitivity NOTIFY sensitivityChanged)
     Q_PROPERTY(float zoomSensitivity READ getZoomSensitivity WRITE setZoomSensitivity NOTIFY zoomSensitivityChanged)
+    Q_PROPERTY(int focusIndex READ getFocusIndex WRITE setFocusIndex NOTIFY focusIndexChanged)
     Q_PROPERTY(bool cameraInvert READ getCameraInvert WRITE setCameraInvert NOTIFY cameraInvertChanged)
     Q_PROPERTY(bool zoomInvert READ getZoomInvert WRITE setZoomInvert NOTIFY zoomInvertChanged)
     Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
@@ -88,6 +94,7 @@ class Canvas : public QQuickFramebufferObject {
     float m_objectUpdateRate = 10.0f;
     float m_cameraSensitivity = 0.005f;
     float m_zoomSensitivity = 0.001;
+    int m_focusIndex = -1;
 
     bool m_cameraInvert = false;
     bool m_zoomInvert = false;
@@ -100,6 +107,7 @@ public:
     float getObjectUpdateRate() const;
     float getSensitivity() const;
     float getZoomSensitivity() const;
+    int getFocusIndex() const;
     bool getCameraInvert() const;
     bool getZoomInvert() const;
     bool isSimulationRunning() const;
@@ -109,6 +117,7 @@ public:
     void setObjectUpdateRate(float rate);
     void setSensitivity(float sensitivity);
     void setZoomSensitivity(float sensitivity);
+    void setFocusIndex(int index);
     void setCameraInvert (bool invert);
     void setZoomInvert(bool invert);
     void setIsSimulationRunning(bool r);
@@ -120,6 +129,7 @@ signals:
     void objectUpdateRateChanged();
     void sensitivityChanged();
     void zoomSensitivityChanged();
+    void focusIndexChanged();
     void cameraInvertChanged();
     void zoomInvertChanged();
     void isSimulationRunningChanged();
