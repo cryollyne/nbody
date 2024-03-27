@@ -14,6 +14,8 @@ Kirigami.ScrollablePage {
         cameraInvertCheckBox.checked = canvas.cameraInvert;
         cameraZoomSensitivitySlider.value = canvas.zoomSensitivity;
         cameraZoomInvertCheckBox.checked = canvas.zoomInvert;
+        orthographicField.position = canvas.orthographic;
+        fovField.text = canvas.fov;
         pageStack.push(settingsPage);
     }
 
@@ -25,6 +27,8 @@ Kirigami.ScrollablePage {
         canvas.cameraInvert = cameraInvertCheckBox.checked;
         canvas.zoomSensitivity = cameraZoomSensitivitySlider.value;
         canvas.zoomInvert = cameraZoomInvertCheckBox.checked;
+        canvas.orthographic = orthographicField.position;
+        canvas.fov = fovField.text;
     }
 
     ColumnLayout {
@@ -70,6 +74,17 @@ Kirigami.ScrollablePage {
                 id: cameraZoomInvertCheckBox
                 Kirigami.FormData.label: "Invert zoom"
 
+            }
+
+            Controls.Switch {
+                id: orthographicField
+                Kirigami.FormData.label: "Orthographic Projection"
+            }
+            Controls.TextField {
+                id: fovField
+                Kirigami.FormData.label: "FOV"
+                validator: DoubleValidator{bottom: 1}
+                enabled: orthographicField.position < 0.5
             }
         }
 

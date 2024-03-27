@@ -91,6 +91,8 @@ void SimRenderer::render() {
             case 1: moveCamera(std::get<RenderCommand::MoveCamera>(c)); break;
             case 2: zoomCamera(std::get<RenderCommand::ZoomCamera>(c)); break;
             case 3: focusObject(std::get<RenderCommand::FocusObject>(c)); break;
+            case 4: m_orthographic = std::get<RenderCommand::SetProjection>(c).orthographic; break;
+            case 5: m_fov = std::get<RenderCommand::SetFov>(c).fov; break;
         }
     }
 }
@@ -155,9 +157,9 @@ void SimRenderer::renderCanvas() {
 
     if (m_orthographic) {
         QMatrix4x4 proj = QMatrix4x4(
-            m_zoom * m_aspectRatio, 0, 0, 0,
-            0, m_zoom, 0, 0,
-            0, 0, 1, 0,
+            1/m_zoom * m_aspectRatio, 0, 0, 0,
+            0, 1/m_zoom, 0, 0,
+            0, 0, 0, 0,
             0, 0, 0, 1
         );
         m_renderer->setUniformValue("orthographic", true);
@@ -372,6 +374,16 @@ void Canvas::setZoomSensitivity(float sensitivity) {
     emit zoomSensitivityChanged();
 }
 
+float Canvas::getFov() const { return m_fov; }
+void Canvas::setFov(float fov) {
+    if (m_fov == fov)
+        return;
+    m_fov = fov;
+    emit fovChanged();
+    m_commandQueue->enqueue(RenderCommand::SetFov{(float)M_PI/180 * fov});
+    updateRenderer();
+}
+
 int Canvas::getFocusIndex() const { return m_focusIndex; }
 void Canvas::setFocusIndex(int index) {
     if (m_focusIndex == index)
@@ -397,6 +409,16 @@ void Canvas::setZoomInvert(bool invert) {
         return;
     m_zoomInvert = invert;
     emit zoomInvertChanged();
+}
+
+bool Canvas::isOrthographic() const { return m_orthographic; }
+void Canvas::setOrthographic(bool ortho) {
+    if (m_orthographic == ortho)
+        return;
+    m_orthographic = ortho;
+    emit orthographicChanged();
+    m_commandQueue->enqueue(RenderCommand::SetProjection{ortho});
+    updateRenderer();
 }
 
 bool Canvas::isSimulationRunning() const { return m_isSimulationRunning; }
