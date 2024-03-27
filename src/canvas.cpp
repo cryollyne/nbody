@@ -46,6 +46,7 @@ private:
     int m_focusIndex = -1;
     float m_aspectRatio;
     float m_zoom = 1.0f;
+    float m_fov = M_PI / 2;
 
     bool m_orthographic = true;
 };
@@ -164,11 +165,12 @@ void SimRenderer::renderCanvas() {
     } else {
         float n = m_zoom/16;    // near clip plane
         float f = 1024*m_zoom;  // far clip plane
+        float s = 1/tan(m_fov/2);
         QMatrix4x4 proj = QMatrix4x4(
-            m_aspectRatio,  0,      0,      0,
-            0,              1,      0,      0,
-            0,              0,      1/f,    (m_zoom - n)/f - 1,
-            0,              0,      1,      m_zoom
+            s*m_aspectRatio,    0,      0,      0,
+            0,                  s,      0,      0,
+            0,                  0,      1/f,    (m_zoom - n)/f - 1,
+            0,                  0,      1,      m_zoom
         );
         m_renderer->setUniformValue("orthographic", false);
         m_renderer->setUniformValue("projection", proj);
