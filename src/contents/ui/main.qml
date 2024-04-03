@@ -45,6 +45,24 @@ Kirigami.ApplicationWindow {
             }
         ]
 
+        MouseArea {
+            anchors.fill: parent
+            property real oldX;
+            property real oldY;
+            onPressed: {
+                oldX = mouse.x;
+                oldY = mouse.y;
+            }
+            onPositionChanged: {
+                if (!containsPress)
+                    return;
+                canvas.moveCamera(oldX-mouse.x, oldY-mouse.y)
+                oldX = mouse.x;
+                oldY = mouse.y;
+            }
+            onWheel: canvas.zoomCamera(wheel.angleDelta.y)
+        }
+
         Canvas {
             id: canvas
             anchors.fill: parent

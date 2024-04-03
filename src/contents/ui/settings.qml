@@ -10,6 +10,12 @@ Kirigami.ScrollablePage {
         tickRateField.text = canvas.tickRate;
         frameUpdateRateField.text = canvas.frameUpdateRate;
         objectUpdateRateField.text = canvas.objectUpdateRate;
+        cameraSensitivitySlider.value = canvas.sensitivity;
+        cameraInvertCheckBox.checked = canvas.cameraInvert;
+        cameraZoomSensitivitySlider.value = canvas.zoomSensitivity;
+        cameraZoomInvertCheckBox.checked = canvas.zoomInvert;
+        orthographicField.checked = canvas.orthographic;
+        fovField.text = canvas.fov;
         pageStack.push(settingsPage);
     }
 
@@ -17,6 +23,12 @@ Kirigami.ScrollablePage {
         canvas.tickRate = tickRateField.text;
         canvas.frameUpdateRate = frameUpdateRateField.text;
         canvas.objectUpdateRate = objectUpdateRateField.text;
+        canvas.sensitivity = cameraSensitivitySlider.value;
+        canvas.cameraInvert = cameraInvertCheckBox.checked;
+        canvas.zoomSensitivity = cameraZoomSensitivitySlider.value;
+        canvas.zoomInvert = cameraZoomInvertCheckBox.checked;
+        canvas.orthographic = orthographicField.checked;
+        canvas.fov = fovField.text;
     }
 
     ColumnLayout {
@@ -38,6 +50,41 @@ Kirigami.ScrollablePage {
                 id: objectUpdateRateField
                 Kirigami.FormData.label: "Object update rate"
                 validator: DoubleValidator{bottom: 1}
+            }
+            Controls.Slider {
+                Kirigami.FormData.label: "Camera sensitivity"
+                id: cameraSensitivitySlider
+                from: 0
+                to: 0.01
+            }
+            Controls.CheckBox {
+                id: cameraInvertCheckBox
+                Kirigami.FormData.label: "Invert camera movement"
+            }
+            Controls.Label {
+                text: `${cameraSensitivitySlider.value.toPrecision(4)} rad/px`
+            }
+            Controls.Slider {
+                Kirigami.FormData.label: "Zoom sensitivity"
+                id: cameraZoomSensitivitySlider
+                from: 0
+                to: 0.005
+            }
+            Controls.CheckBox {
+                id: cameraZoomInvertCheckBox
+                Kirigami.FormData.label: "Invert zoom"
+
+            }
+
+            Controls.Switch {
+                id: orthographicField
+                Kirigami.FormData.label: "Orthographic Projection"
+            }
+            Controls.TextField {
+                id: fovField
+                Kirigami.FormData.label: "FOV"
+                validator: DoubleValidator{bottom: 1}
+                enabled: orthographicField.position < 0.5
             }
         }
 

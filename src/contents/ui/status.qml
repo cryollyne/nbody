@@ -11,6 +11,15 @@ Kirigami.ScrollablePage {
         Kirigami.Card {
             actions: [
                 Kirigami.Action {
+                    text: (canvas.focusIndex == index) ? "Unfocus" : "Focus"
+                    onTriggered: {
+                        if (canvas.focusIndex == index)
+                            canvas.focusIndex = -1;
+                        else
+                            canvas.focusIndex = index;
+                    }
+                },
+                Kirigami.Action {
                     text: "Delete"
                     onTriggered: canvas.deleteObject(index); 
                     visible: !canvas.isSimulationRunning

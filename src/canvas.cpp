@@ -3,6 +3,9 @@
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
+#include <cmath>
+#include <algorithm>
+#include <limits>
 #include "canvas.h"
 #include "backend.h"
 #include "dynamic_buffer.h"
@@ -23,6 +26,10 @@ public:
 private:
 
     void renderCanvas();
+    void moveCamera(RenderCommand::MoveCamera cmd);
+    void zoomCamera(RenderCommand::ZoomCamera cmd);
+    void focusObject(RenderCommand::FocusObject cmd);
+
     void updateSimulator();
     void setObject(RenderCommand::SetObject obj);
     void addObject();
@@ -34,6 +41,14 @@ private:
     QOpenGLShaderProgram *m_renderer;
     QOpenGLShaderProgram *m_simulator;
     DynamicBufferArray m_simulatorBuffer;
+
+    QMatrix4x4 m_cameraModel = QMatrix4x4();
+    int m_focusIndex = -1;
+    float m_aspectRatio;
+    float m_zoom = 1.0f;
+    float m_fov = M_PI / 2;
+
+    bool m_orthographic = true;
 };
 
 QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size) {
@@ -60,6 +75,8 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
         m_simulatorBuffer.addObject({glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10});
     }
 
+    m_aspectRatio = (float)size.height()/(float)size.width();
+
     return new QOpenGLFramebufferObject(size, format);
 }
 
@@ -71,6 +88,11 @@ void SimRenderer::render() {
         RenderCommand::RenderCommand c = m_commandQueue->dequeue();
         switch (c.index()) {
             case 0: renderCanvas(); break;
+            case 1: moveCamera(std::get<RenderCommand::MoveCamera>(c)); break;
+            case 2: zoomCamera(std::get<RenderCommand::ZoomCamera>(c)); break;
+            case 3: focusObject(std::get<RenderCommand::FocusObject>(c)); break;
+            case 4: m_orthographic = std::get<RenderCommand::SetProjection>(c).orthographic; break;
+            case 5: m_fov = std::get<RenderCommand::SetFov>(c).fov; break;
         }
     }
 }
@@ -133,10 +155,76 @@ void SimRenderer::renderCanvas() {
     gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     gl->glEnable(GL_PROGRAM_POINT_SIZE);
 
+    if (m_orthographic) {
+        QMatrix4x4 proj = QMatrix4x4(
+            1/m_zoom * m_aspectRatio, 0, 0, 0,
+            0, 1/m_zoom, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 1
+        );
+        m_renderer->setUniformValue("orthographic", true);
+        m_renderer->setUniformValue("projection", proj);
+        m_renderer->setUniformValue("zoom", m_zoom);
+    } else {
+        float n = m_zoom/16;    // near clip plane
+        float f = 1024*m_zoom;  // far clip plane
+        float s = 1/tan(m_fov/2);
+        QMatrix4x4 proj = QMatrix4x4(
+            s*m_aspectRatio,    0,      0,      0,
+            0,                  s,      0,      0,
+            0,                  0,      1/f,    (m_zoom - n)/f - 1,
+            0,                  0,      1,      m_zoom
+        );
+        m_renderer->setUniformValue("orthographic", false);
+        m_renderer->setUniformValue("projection", proj);
+    }
+
+    m_renderer->setUniformValue("focus", m_focusIndex);
+    m_renderer->setUniformValue("view", m_cameraModel.inverted());
+
     gl->glDrawArraysInstanced(GL_POINTS, 0, m_simulatorBuffer.size(), m_simulatorBuffer.size());
 
     m_renderer->release();
     m_item->window()->endExternalCommands();
+}
+
+void SimRenderer::moveCamera(RenderCommand::MoveCamera cmd) {
+    float x = cmd.x;
+    float y = cmd.y;
+
+    float theta = sqrt(x*x + y*y);
+    QVector3D rotAxis = (m_cameraModel * QVector3D{-y, x, 0}).normalized();
+
+    QMatrix3x3 I = QMatrix3x3();
+    QMatrix3x3 W = QMatrix3x3(new float[] {
+        0,              -rotAxis.z(),   rotAxis.y(),
+        rotAxis.z(),    0,              -rotAxis.x(),
+        -rotAxis.y(),   rotAxis.x(),    0
+    });
+
+    // Rodrigues rotation formula
+    QMatrix3x3 rot = I + (float)sin(theta)*W + (float)(1-cos(theta))*W*W;
+
+    QMatrix4x4 rot4 = QMatrix4x4(
+        rot(0, 0), rot(0, 1), rot(0, 2), 0,
+        rot(1, 0), rot(1, 1), rot(1, 2), 0,
+        rot(2, 0), rot(2, 1), rot(2, 2), 0,
+        0,          0,          0,          1
+    );
+
+    m_cameraModel = rot4 * m_cameraModel;
+}
+
+void SimRenderer::zoomCamera(RenderCommand::ZoomCamera cmd) {
+    m_zoom = std::clamp(
+        m_zoom * cmd.amount,
+        std::numeric_limits<float>::min(),
+        std::numeric_limits<float>::max()
+    );
+}
+
+void SimRenderer::focusObject(RenderCommand::FocusObject cmd) {
+    m_focusIndex = cmd.index;
 }
 
 void SimRenderer::updateSimulator() {
@@ -192,6 +280,21 @@ void Canvas::deleteObject(int index) {
     m_commandQueue->enqueue(RenderCommand::DeleteObject{static_cast<uint32_t>(index)});
     updateRenderer();
     synchronizeObjects();
+}
+void Canvas::moveCamera(float x, float y) {
+    m_commandQueue->enqueue(RenderCommand::MoveCamera{
+        (m_cameraInvert?-1:1)*m_cameraSensitivity*x,
+        (m_cameraInvert?-1:1)*m_cameraSensitivity*y
+    });
+    if (!m_isSimulationRunning)
+        updateRenderer();
+}
+void Canvas::zoomCamera(float amount) {
+    m_commandQueue->enqueue(RenderCommand::ZoomCamera{
+        (float)exp( (m_zoomInvert?-1:1) * amount * m_zoomSensitivity )
+    });
+    if (!m_isSimulationRunning)
+        updateRenderer();
 }
 
 QQuickFramebufferObject::Renderer *Canvas::createRenderer() const {
@@ -254,6 +357,69 @@ void Canvas::setObjectUpdateRate(float rate) {
             this->m_objectUpdateTimer->start(1000.0/rate);
         });
     }
+}
+
+float Canvas::getSensitivity() const { return m_cameraSensitivity; }
+void Canvas::setSensitivity(float sensitivity) {
+    if (sensitivity == m_cameraSensitivity)
+        return;
+    m_cameraSensitivity = sensitivity;
+    emit sensitivityChanged();
+}
+
+float Canvas::getZoomSensitivity() const { return m_zoomSensitivity; }
+void Canvas::setZoomSensitivity(float sensitivity) {
+    if (sensitivity == m_zoomSensitivity)
+        return;
+    m_zoomSensitivity = sensitivity;
+    emit zoomSensitivityChanged();
+}
+
+float Canvas::getFov() const { return m_fov; }
+void Canvas::setFov(float fov) {
+    if (m_fov == fov)
+        return;
+    m_fov = fov;
+    emit fovChanged();
+    m_commandQueue->enqueue(RenderCommand::SetFov{(float)M_PI/180 * fov});
+    updateRenderer();
+}
+
+int Canvas::getFocusIndex() const { return m_focusIndex; }
+void Canvas::setFocusIndex(int index) {
+    if (m_focusIndex == index)
+        return;
+    m_focusIndex = index;
+    m_commandQueue->enqueue(RenderCommand::FocusObject{index});
+    if (!m_isSimulationRunning)
+        updateRenderer();
+    emit focusIndexChanged();
+}
+
+bool Canvas::getCameraInvert() const { return m_cameraInvert; }
+void Canvas::setCameraInvert(bool invert) {
+    if (invert == m_cameraInvert)
+        return;
+    m_cameraInvert = invert;
+    emit cameraInvertChanged();
+}
+
+bool Canvas::getZoomInvert() const { return m_zoomInvert; }
+void Canvas::setZoomInvert(bool invert) {
+    if (invert == m_zoomInvert)
+        return;
+    m_zoomInvert = invert;
+    emit zoomInvertChanged();
+}
+
+bool Canvas::isOrthographic() const { return m_orthographic; }
+void Canvas::setOrthographic(bool ortho) {
+    if (m_orthographic == ortho)
+        return;
+    m_orthographic = ortho;
+    emit orthographicChanged();
+    m_commandQueue->enqueue(RenderCommand::SetProjection{ortho});
+    updateRenderer();
 }
 
 bool Canvas::isSimulationRunning() const { return m_isSimulationRunning; }
