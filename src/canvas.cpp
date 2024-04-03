@@ -164,6 +164,7 @@ void SimRenderer::renderCanvas() {
         );
         m_renderer->setUniformValue("orthographic", true);
         m_renderer->setUniformValue("projection", proj);
+        m_renderer->setUniformValue("zoom", m_zoom);
     } else {
         float n = m_zoom/16;    // near clip plane
         float f = 1024*m_zoom;  // far clip plane
