@@ -396,7 +396,7 @@ void Canvas::setFocusIndex(int index) {
     emit focusIndexChanged();
 }
 
-bool Canvas::getCameraInvert() const { return m_zoomInvert; }
+bool Canvas::getCameraInvert() const { return m_cameraInvert; }
 void Canvas::setCameraInvert(bool invert) {
     if (invert == m_cameraInvert)
         return;

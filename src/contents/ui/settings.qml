@@ -14,7 +14,7 @@ Kirigami.ScrollablePage {
         cameraInvertCheckBox.checked = canvas.cameraInvert;
         cameraZoomSensitivitySlider.value = canvas.zoomSensitivity;
         cameraZoomInvertCheckBox.checked = canvas.zoomInvert;
-        orthographicField.position = canvas.orthographic;
+        orthographicField.checked = canvas.orthographic;
         fovField.text = canvas.fov;
         pageStack.push(settingsPage);
     }
@@ -27,7 +27,7 @@ Kirigami.ScrollablePage {
         canvas.cameraInvert = cameraInvertCheckBox.checked;
         canvas.zoomSensitivity = cameraZoomSensitivitySlider.value;
         canvas.zoomInvert = cameraZoomInvertCheckBox.checked;
-        canvas.orthographic = orthographicField.position;
+        canvas.orthographic = orthographicField.checked;
         canvas.fov = fovField.text;
     }
 
