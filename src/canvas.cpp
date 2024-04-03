@@ -134,8 +134,6 @@ void SimRenderer::synchronizeObjects(Canvas *canvas) {
             current.mass
         });
         canvas->m_objects.append(obj);
-        // QList::append() is very slow for some reason
-        // TODO: optimize performance
     }
     gl->glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
     emit canvas->objectsChanged();

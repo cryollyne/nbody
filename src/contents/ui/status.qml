@@ -204,7 +204,7 @@ Kirigami.ScrollablePage {
             Layout.fillWidth: true;
             Layout.fillHeight: true;
             id: listView
-            model: canvas.objects
+            model: canvas.objects.length
             delegate: objectListDelegate
         }
 
