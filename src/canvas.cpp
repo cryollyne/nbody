@@ -286,15 +286,15 @@ void Canvas::deleteObject(int index) {
 }
 void Canvas::moveCamera(float x, float y) {
     m_commandQueue->enqueue(RenderCommand::MoveCamera{
-        (m_cameraInvert?-1:1)*m_cameraSensitivity*x,
-        (m_cameraInvert?-1:1)*m_cameraSensitivity*y
+        (m_cameraInvert?1:-1)*m_cameraSensitivity*x,
+        (m_cameraInvert?1:-1)*m_cameraSensitivity*y
     });
     if (!m_isSimulationRunning)
         updateRenderer();
 }
 void Canvas::zoomCamera(float amount) {
     m_commandQueue->enqueue(RenderCommand::ZoomCamera{
-        (float)exp( (m_zoomInvert?-1:1) * amount * m_zoomSensitivity )
+        (float)exp( (m_zoomInvert?1:-1) * amount * m_zoomSensitivity )
     });
     if (!m_isSimulationRunning)
         updateRenderer();
