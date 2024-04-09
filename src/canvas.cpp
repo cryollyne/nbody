@@ -194,11 +194,12 @@ void SimRenderer::moveCamera(RenderCommand::MoveCamera cmd) {
     QVector3D rotAxis = (m_cameraModel * QVector3D{-y, x, 0}).normalized();
 
     QMatrix3x3 I = QMatrix3x3();
-    QMatrix3x3 W = QMatrix3x3(new float[] {
+    float wData[] = {
         0,              -rotAxis.z(),   rotAxis.y(),
         rotAxis.z(),    0,              -rotAxis.x(),
         -rotAxis.y(),   rotAxis.x(),    0
-    });
+    };
+    QMatrix3x3 W = QMatrix3x3(wData);
 
     // Rodrigues rotation formula
     QMatrix3x3 rot = I + (float)sin(theta)*W + (float)(1-cos(theta))*W*W;
