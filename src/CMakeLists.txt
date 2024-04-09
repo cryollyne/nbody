@@ -11,10 +11,7 @@ target_sources(nbody PRIVATE
     resources.qrc
 )
 
-find_package(glm REQUIRED)
-
 target_link_libraries(nbody
-    glm::glm
     Qt${QT_MAJOR_VERSION}::Quick
     Qt${QT_MAJOR_VERSION}::Qml
     Qt${QT_MAJOR_VERSION}::Gui

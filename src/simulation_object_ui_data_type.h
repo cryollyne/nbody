@@ -1,6 +1,8 @@
 #ifndef SIMULATION_OBJECT_UI_DATA_TYPE_H
 #define SIMULATION_OBJECT_UI_DATA_TYPE_H
 
+#include "simulation_data.h"
+
 struct SimulatorObject {
     Q_GADGET
 
@@ -19,7 +21,7 @@ public:
         m_mass = obj.m_mass;
         return *this;
     }
-    SimulatorObject(glm::vec3 pos, glm::vec3 vel, float mass)
+    SimulatorObject(vec3 pos, vec3 vel, float mass)
         : m_position(pos.x, pos.y, pos.z)
         , m_velocity(vel.x, vel.y, vel.z)
         , m_mass(mass)

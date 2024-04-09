@@ -71,8 +71,8 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
         m_simulator->link();
         delete shader;
 
-        m_simulatorBuffer.addObject({glm::vec3 {-1, 0, 0}, glm::vec3 {0, -0.3, 0}, 1e10});
-        m_simulatorBuffer.addObject({glm::vec3 {+1, 0, 0}, glm::vec3 {0, +0.3, 0}, 1e10});
+        m_simulatorBuffer.addObject({vec3 {-1, 0, 0}, vec3 {0, -0.3, 0}, 1e10});
+        m_simulatorBuffer.addObject({vec3 {+1, 0, 0}, vec3 {0, +0.3, 0}, 1e10});
     }
 
     m_aspectRatio = (float)size.height()/(float)size.width();
@@ -260,8 +260,8 @@ void Canvas::synchronizeObjects() {
 }
 void Canvas::setObject(int index, QVector3D position, QVector3D velocity, float mass) {
     SimulatorData data {
-        glm::vec3{position.x(), position.y(), position.z()},
-        glm::vec3{velocity.x(), velocity.y(), velocity.z()},
+        vec3{position.x(), position.y(), position.z()},
+        vec3{velocity.x(), velocity.y(), velocity.z()},
         mass
     };
     m_commandQueue->enqueue(RenderCommand::SetObject{static_cast<uint32_t>(index), data});
