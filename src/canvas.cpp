@@ -1,4 +1,4 @@
-#include <qt/QtQuick/qquickwindow.h>
+#include <qquickwindow.h>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>

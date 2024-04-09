@@ -1,8 +1,8 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include <qt/QtQuick/QQuickItem>
-#include <qt/QtQuick/qquickwindow.h>
+#include <QQuickItem>
+#include <qquickwindow.h>
 #include <QOpenGLShaderProgram>
 #include <QQuickFramebufferObject>
 #include <QTimer>
