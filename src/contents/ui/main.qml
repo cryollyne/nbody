@@ -17,7 +17,6 @@ Kirigami.ApplicationWindow {
         ]
     }
 
-    title: "n body sim"
     pageStack.initialPage: Kirigami.Page {
         padding: 0
         contextualActions: [
