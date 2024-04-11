@@ -1,15 +1,14 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include <qt/QtQuick/QQuickItem>
-#include <qt/QtQuick/qquickwindow.h>
+#include <QQuickItem>
+#include <qquickwindow.h>
 #include <QOpenGLShaderProgram>
 #include <QQuickFramebufferObject>
 #include <QTimer>
 #include <QQueue>
 
 #include <variant>
-#include <glm/vec3.hpp>
 
 #include "simulation_object_ui_data_type.h"
 #include "simulation_data.h"

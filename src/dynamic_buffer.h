@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-class SimulatorData;
+struct SimulatorData;
 
 class DynamicBufferArray {
 public:

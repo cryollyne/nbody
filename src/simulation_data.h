@@ -1,22 +1,28 @@
 #ifndef SIMULATION_DATA_H
 #define SIMULATION_DATA_H
 
-#include <glm/vec3.hpp>
 #include <iostream>
 
 #pragma pack()
+struct vec3 {
+    float x;
+    float y;
+    float z;
+};
+
+#pragma pack()
 struct SimulatorData {
-    glm::vec3 position;
+    vec3 position;
     char _pad[4];
-    glm::vec3 velocity;
+    vec3 velocity;
     float mass;
 
     SimulatorData()
-        : position(glm::vec3 {0, 0, 0})
-        , velocity(glm::vec3 {0, 0, 0})
+        : position(vec3 {0, 0, 0})
+        , velocity(vec3 {0, 0, 0})
         , mass(1)
     {}
-    SimulatorData(glm::vec3 pos, glm::vec3 vel, float _mass)
+    SimulatorData(vec3 pos, vec3 vel, float _mass)
         : position(pos)
         , velocity(vel)
         , mass(_mass)

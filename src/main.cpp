@@ -5,7 +5,7 @@
 #include <QQuickStyle>
 #include <KLocalizedContext>
 #include <KLocalizedString>
-#include <qt/QtQuick/QQuickItem>
+#include <QQuickItem>
 
 #include "canvas.h"
 #include "backend.h"
