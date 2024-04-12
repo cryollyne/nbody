@@ -12,6 +12,7 @@ Kirigami.ScrollablePage {
             actions: [
                 Kirigami.Action {
                     text: (canvas.focusIndex == index) ? "Unfocus" : "Focus"
+                    icon.name: (canvas.focusIndex == index) ? "dialog-cancel" : "edit-find"
                     onTriggered: {
                         if (canvas.focusIndex == index)
                             canvas.focusIndex = -1;
@@ -21,8 +22,9 @@ Kirigami.ScrollablePage {
                 },
                 Kirigami.Action {
                     text: "Delete"
+                    icon.name: "edit-delete"
                     onTriggered: canvas.deleteObject(index); 
-                    visible: !canvas.isSimulationRunning
+                    enabled: !canvas.isSimulationRunning
                 }
             ]
             contentItem: Item {
@@ -214,6 +216,7 @@ Kirigami.ScrollablePage {
             Controls.Button {
                 text: "Create Object"
                 onClicked: canvas.addObject();
+                icon.name: "list-add"
                 enabled: !canvas.isSimulationRunning
             }
             Controls.Button {
