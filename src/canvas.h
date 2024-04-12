@@ -113,12 +113,12 @@ class Canvas : public QQuickFramebufferObject {
     float m_cameraSensitivity = 0.005f;
     float m_zoomSensitivity = 0.001;
     float m_fov = 90;
-    float m_timeRatio = 1;
+    float m_timeRatio = 60*60*24*5;
     int m_focusIndex = -1;
 
     bool m_cameraInvert = false;
     bool m_zoomInvert = false;
-    bool m_orthographic = true;
+    bool m_orthographic = false;
     bool m_isSimulationRunning = true;
 
 public:

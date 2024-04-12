@@ -20,21 +20,19 @@ void main() {
     Object current = val.obj[gl_GlobalInvocationID.x];
 
     uint n = gl_NumWorkGroups.x;
-    vec3 netForce = vec3(0);
+    vec3 netAcc = vec3(0);
     for (int i = 0; i < n; i++) {
         if (i != gl_GlobalInvocationID.x) {
             Object other = val.obj[i];
             vec3 disp = other.position - current.position;
 
-            // F = G m1 m2 / r^2
-            float force = (G * current.mass * other.mass) / dot(disp, disp);
+            // g = G m2 / r^2   (gravitational field strength is acceleration)
+            float acc = (G * other.mass) / dot(disp, disp);
 
-            netForce += force * normalize(disp);
+            netAcc += acc * normalize(disp);
         }
     }
 
-    vec3 acc = netForce / current.mass;
-
-    val.obj[gl_GlobalInvocationID.x].velocity += acc * dt;
+    val.obj[gl_GlobalInvocationID.x].velocity += netAcc * dt;
     val.obj[gl_GlobalInvocationID.x].position += val.obj[gl_GlobalInvocationID.x].velocity * dt;
 }

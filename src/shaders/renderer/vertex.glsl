@@ -34,7 +34,7 @@ void main() {
     if (focus >= 0)
         focusPosition = vec4(val.obj[focus].position, 0);
 
-    float size = pow(val.obj[gl_InstanceID].mass, 1.0/3.0);
+    float size = 400 * pow(val.obj[gl_InstanceID].mass, 1.0/3.0);
 
     if (orthographic) {
         gl_PointSize = clamp(size/zoom, minSize, maxSize);
