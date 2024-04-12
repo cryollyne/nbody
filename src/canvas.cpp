@@ -44,6 +44,7 @@ private:
 
     QMatrix4x4 m_cameraModel = QMatrix4x4();
     int m_focusIndex = -1;
+    float m_dt = 1/60.0;
     float m_aspectRatio;
     float m_zoom = 1.0f;
     float m_fov = M_PI / 2;
@@ -112,6 +113,7 @@ void SimRenderer::synchronize(QQuickFramebufferObject *item) {
                 case 2: setObject(std::get<RenderCommand::SetObject>(c)); break;
                 case 3: addObject(); break;
                 case 4: deleteObject(std::get<RenderCommand::DeleteObject>(c).index); break;
+                case 5: m_dt = std::get<RenderCommand::SetTimeStep>(c).dt; break;
             }
         }
     }
@@ -231,6 +233,8 @@ void SimRenderer::updateSimulator() {
 
     m_simulator->bind();
 
+    m_simulator->setUniformValue("dt", m_dt);
+
     gl->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_simulatorBuffer.buffObject());
     gl->glDispatchCompute(m_simulatorBuffer.size(), 1, 1);
 
@@ -317,6 +321,7 @@ void Canvas::setTickRate(float rate) {
     if (rate == m_simulatorTickRate)
         return;
     m_simulatorTickRate = rate;
+    m_commandQueue->enqueue(RenderCommand::SetTimeStep{m_timeRatio / m_simulatorTickRate});
     emit tickRateChanged();
 
     if (m_simulatorTimer->isActive()) {
@@ -382,6 +387,15 @@ void Canvas::setFov(float fov) {
     emit fovChanged();
     m_commandQueue->enqueue(RenderCommand::SetFov{(float)M_PI/180 * fov});
     updateRenderer();
+}
+
+float Canvas::getTimeRatio() const { return m_timeRatio; }
+void Canvas::setTimeRatio(float ratio) {
+    if (m_timeRatio == ratio)
+        return;
+    m_timeRatio = ratio;
+    m_commandQueue->enqueue(RenderCommand::SetTimeStep{m_timeRatio / m_simulatorTickRate});
+    emit timeRatioChanged();
 }
 
 int Canvas::getFocusIndex() const { return m_focusIndex; }

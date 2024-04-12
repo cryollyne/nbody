@@ -49,6 +49,10 @@ namespace RenderCommand {
         public:
         uint32_t index;
     };
+    class SetTimeStep {
+        public:
+        float dt;
+    };
 
     // runs asynchronously
     using RenderCommand = std::variant<
@@ -67,6 +71,7 @@ namespace RenderCommand {
         , SetObject
         , AddObject
         , DeleteObject
+        , SetTimeStep
     >;
 
     using Command = std::variant<
@@ -93,11 +98,13 @@ class Canvas : public QQuickFramebufferObject {
     Q_PROPERTY(float sensitivity READ getSensitivity WRITE setSensitivity NOTIFY sensitivityChanged)
     Q_PROPERTY(float zoomSensitivity READ getZoomSensitivity WRITE setZoomSensitivity NOTIFY zoomSensitivityChanged)
     Q_PROPERTY(float fov READ getFov WRITE setFov NOTIFY fovChanged)
+    Q_PROPERTY(float timeRatio READ getTimeRatio WRITE setTimeRatio NOTIFY timeRatioChanged)
     Q_PROPERTY(int focusIndex READ getFocusIndex WRITE setFocusIndex NOTIFY focusIndexChanged)
     Q_PROPERTY(bool cameraInvert READ getCameraInvert WRITE setCameraInvert NOTIFY cameraInvertChanged)
     Q_PROPERTY(bool zoomInvert READ getZoomInvert WRITE setZoomInvert NOTIFY zoomInvertChanged)
     Q_PROPERTY(bool orthographic READ isOrthographic WRITE setOrthographic NOTIFY orthographicChanged)
     Q_PROPERTY(bool isSimulationRunning READ isSimulationRunning WRITE setIsSimulationRunning NOTIFY isSimulationRunningChanged)
+
 
     QVariantList m_objects {};
     float m_simulatorTickRate = 60.0f;
@@ -106,6 +113,7 @@ class Canvas : public QQuickFramebufferObject {
     float m_cameraSensitivity = 0.005f;
     float m_zoomSensitivity = 0.001;
     float m_fov = 90;
+    float m_timeRatio = 1;
     int m_focusIndex = -1;
 
     bool m_cameraInvert = false;
@@ -121,6 +129,7 @@ public:
     float getSensitivity() const;
     float getZoomSensitivity() const;
     float getFov() const;
+    float getTimeRatio() const;
     int getFocusIndex() const;
     bool getCameraInvert() const;
     bool getZoomInvert() const;
@@ -133,6 +142,7 @@ public:
     void setSensitivity(float sensitivity);
     void setZoomSensitivity(float sensitivity);
     void setFov(float fov);
+    void setTimeRatio(float ratio);
     void setFocusIndex(int index);
     void setCameraInvert (bool invert);
     void setZoomInvert(bool invert);
@@ -147,6 +157,7 @@ signals:
     void sensitivityChanged();
     void zoomSensitivityChanged();
     void fovChanged();
+    void timeRatioChanged();
     void focusIndexChanged();
     void cameraInvertChanged();
     void zoomInvertChanged();

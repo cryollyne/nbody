@@ -16,6 +16,7 @@ Kirigami.ScrollablePage {
         cameraZoomInvertCheckBox.checked = canvas.zoomInvert;
         orthographicField.checked = canvas.orthographic;
         fovField.text = canvas.fov;
+        timeRatioField.text = canvas.timeRatio
         pageStack.push(settingsPage);
     }
 
@@ -29,6 +30,7 @@ Kirigami.ScrollablePage {
         canvas.zoomInvert = cameraZoomInvertCheckBox.checked;
         canvas.orthographic = orthographicField.checked;
         canvas.fov = fovField.text;
+        canvas.timeRatio = timeRatioField.text
     }
 
     ColumnLayout {
@@ -85,6 +87,11 @@ Kirigami.ScrollablePage {
                 Kirigami.FormData.label: "FOV"
                 validator: DoubleValidator{bottom: 1}
                 enabled: orthographicField.position < 0.5
+            }
+            Controls.TextField {
+                id: timeRatioField
+                Kirigami.FormData.label: "Time ratio"
+                validator: DoubleValidator{bottom: 1}
             }
         }
 

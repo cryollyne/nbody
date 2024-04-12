@@ -31,9 +31,9 @@ Kirigami.ApplicationWindow {
                 }
             },
             Kirigami.Action {
-                // TODO: gray out action when simulation is running
                 icon.name: "media-playback-start"
                 tooltip: "Tick Simulation"
+                enabled: !canvas.isSimulationRunning
                 onTriggered: {
                     if (!canvas.isSimulationRunning) {
                         canvas.tickSimulator();
@@ -67,16 +67,11 @@ Kirigami.ApplicationWindow {
             anchors.fill: parent
         }
 
-        Kirigami.ActionToolBar {
+        Controls.Button {
             anchors.right: parent.right
             anchors.top: parent.top
-            actions: [
-                Kirigami.Action {
-                    visible: true
-                    icon.name: pageStack.lastItem === statusPage ? "arrow-right-double" : "arrow-left-double"
-                    onTriggered: pageStack.lastItem === statusPage ? pageStack.pop() : pageStack.push(statusPage)
-                }
-            ]
+            icon.name: pageStack.lastItem === statusPage ? "arrow-right-double" : "arrow-left-double"
+            onClicked: pageStack.lastItem === statusPage ? pageStack.pop() : pageStack.push(statusPage)
         }
     }
     SettingsPage {

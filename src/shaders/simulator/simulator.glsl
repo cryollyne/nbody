@@ -11,7 +11,7 @@ layout(binding = 0, std430) buffer SSBO {
     Object obj[];
 } val;
 
-uniform float dt = 0.1;
+uniform float dt;
 
 const float G = 6.67e-11;
 
