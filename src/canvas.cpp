@@ -4,6 +4,7 @@
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLFramebufferObjectFormat>
 #include <cmath>
+#include <random>
 #include <algorithm>
 #include <limits>
 #include "canvas.h"
@@ -24,6 +25,7 @@ public:
     void synchronizeObjects(Canvas *item);
 
 private:
+    void initSimulatorObjects();
 
     void renderCanvas();
     void moveCamera(RenderCommand::MoveCamera cmd);
@@ -44,12 +46,12 @@ private:
 
     QMatrix4x4 m_cameraModel = QMatrix4x4();
     int m_focusIndex = -1;
-    float m_dt = 1/60.0;
+    float m_dt = 60*24*5;
     float m_aspectRatio;
-    float m_zoom = 1.0f;
+    float m_zoom = 5.0e11f;
     float m_fov = M_PI / 2;
 
-    bool m_orthographic = true;
+    bool m_orthographic = false;
 };
 
 QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size) {
@@ -72,13 +74,68 @@ QOpenGLFramebufferObject *SimRenderer::createFramebufferObject(const QSize &size
         m_simulator->link();
         delete shader;
 
-        m_simulatorBuffer.addObject({vec3 {-1, 0, 0}, vec3 {0, -0.3, 0}, 1e10});
-        m_simulatorBuffer.addObject({vec3 {+1, 0, 0}, vec3 {0, +0.3, 0}, 1e10});
+        initSimulatorObjects();
     }
 
     m_aspectRatio = (float)size.height()/(float)size.width();
 
     return new QOpenGLFramebufferObject(size, format);
+}
+
+void SimRenderer::initSimulatorObjects() {
+    auto makeObject = [this](float distance, float velocity, float angle, float mass, float y=0.0) {
+        m_simulatorBuffer.addObject({
+            vec3{(float)cos(angle)*distance, (float)sin(angle)*distance, y},
+            vec3{(float)-sin(angle)*velocity, (float)cos(angle)*velocity, 0},
+            mass
+        });
+    };
+    srand(0xbeef); // use same seed for consistant random values
+    auto randAng = []() {return (rand()%(6283))/1000.0;};
+
+    m_simulatorBuffer.addObject({vec3 {0, 0, 0}, vec3 {0, 0, 0}, 1.989e30}); // sun
+
+    // earth
+    float earthAng = randAng();
+    vec3 earthPos = vec3{(float)cos(earthAng)*1.496e11f, (float)sin(earthAng)*1.496e11f, 0};
+    vec3 earthVel = vec3{(float)-sin(earthAng)*2.98e4f, (float)cos(earthAng)*2.98e4f, 0};
+    m_simulatorBuffer.addObject({ earthPos, earthVel, 5.972e24 });
+
+    // moon
+    float moonAng = randAng();
+    vec3 moonPos = vec3{(float)cos(moonAng)*3.84e8f, (float)sin(moonAng)*3.84e8f, 0};
+    vec3 moonVel = vec3{(float)-sin(moonAng)*1023.0f, (float)cos(moonAng)*1023.0f, 0};
+    m_simulatorBuffer.addObject({
+        vec3{
+            earthPos.x + moonPos.x,
+            earthPos.y + moonPos.y,
+            earthPos.z + moonPos.z,
+        },
+        vec3 {
+            earthVel.x + moonVel.x,
+            earthVel.y + moonVel.y,
+            earthVel.z + moonVel.z,
+        },
+        7.348e22
+    });
+
+
+    makeObject(5.79e10, 4.74e4, randAng(), 3.30e23);    // Mercury
+    makeObject(1.082e11, 3.5e4, randAng(), 4.870e24);   // Venus
+    makeObject(2.280e11, 2.41e4, randAng(), 6.42e23);   // Mars
+
+    makeObject(7.775e11, 1.31e4, randAng(), 1.898e27);  // Jupiter
+    makeObject(1.432e12, 9.7e3, randAng(), 5.68e26);    // Saturn
+    makeObject(2.867e12, 6.8e3, randAng(), 8.68e25);    // Uranus
+    makeObject(4.515e12, 5.4e3, randAng(), 1.02e26);    // Neptune
+
+    // astroid belt
+    for (int i = 0; i < 100; i++) {
+        float dist = ((rand() % 1000)/1000.0) * 149000000000 + 329000000000;
+        float vel = ((rand() % 1000)/1000.0) * 8000 + 19000;
+        float y = ((rand() % 1000)/1000.0) * 40000000000 - 20000000000;
+        makeObject(dist, vel, randAng(), 100, y);
+    }
 }
 
 void SimRenderer::render() {
